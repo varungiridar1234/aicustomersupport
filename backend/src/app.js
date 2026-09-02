@@ -11,12 +11,11 @@ const auditRoutes = require('./routes/auditRoutes');
 
 const app = express();
 
-// Configure CORS for external customer portal & Render deployment
-const allowedOrigin = process.env.ALLOWED_ORIGIN;
+// Configure CORS for external customer portals & Render deployment
 app.use(cors({
-  origin: allowedOrigin ? allowedOrigin.split(',').map(o => o.trim()) : '*',
+  origin: '*',
   methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-demo-user-id'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-demo-user-id', 'x-requested-with', 'accept', 'origin'],
 }));
 
 app.use(express.json());
