@@ -47,6 +47,23 @@ exports.createExternalTicket = async (req, res, next) => {
       });
     }
 
+    // 2.5 Duplicate submission protection (prevent double-clicks within 30 seconds)
+    const thirtySecondsAgo = new Date(Date.now() - 30 * 1000);
+    const existingRecentTicket = await Ticket.findOne({
+      'customer.email': customerEmail,
+      subject: subject,
+      createdAt: { $gte: thirtySecondsAgo },
+    });
+
+    if (existingRecentTicket) {
+      return res.status(200).json({
+        success: true,
+        ticketId: existingRecentTicket.ticketId,
+        status: 'RECEIVED',
+        message: 'Your support request has already been received.',
+      });
+    }
+
     // 3. Generate unique Ticket ID
     const count = await Ticket.countDocuments();
     const ticketId = `TICK-${1024 + count}`;
