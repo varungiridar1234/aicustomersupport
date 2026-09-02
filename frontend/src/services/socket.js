@@ -4,7 +4,15 @@ let socket = null;
 
 export const initSocket = (userId = 'default_user') => {
   if (!socket) {
-    const socketUrl = import.meta.env.VITE_API_URL || '/';
+    let socketUrl = import.meta.env.VITE_API_URL;
+    if (!socketUrl) {
+      if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+        socketUrl = '/';
+      } else {
+        socketUrl = 'https://aicustomersupport-lpao.onrender.com';
+      }
+    }
+
     socket = io(socketUrl, {
       transports: ['websocket', 'polling'],
       reconnectionAttempts: 10,
