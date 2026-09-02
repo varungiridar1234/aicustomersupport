@@ -61,20 +61,20 @@ export default function KnowledgeBaseView() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-slate-200">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
-            <BookOpen className="w-6 h-6 text-emerald-400" />
-            Company Policy Knowledge Base (RAG Store)
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+            <BookOpen className="w-5 h-5 text-purple-600" />
+            Support<span className="text-purple-600">IQ</span> Knowledge Intelligence (RAG Grounding)
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-slate-500 mt-0.5">
             Grounded policy documents indexed for vector similarity search and Gemini resolution reasoning
           </p>
         </div>
 
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg shadow-lg shadow-emerald-600/20"
+          className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs rounded-lg shadow-sm transition-colors"
         >
           <Plus className="w-4 h-4" />
           <span>Upload Policy Document</span>
@@ -82,7 +82,7 @@ export default function KnowledgeBaseView() {
       </div>
 
       {/* Filter Bar */}
-      <div className="glass-panel p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="relative w-full md:w-96">
           <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
           <input
@@ -90,14 +90,14 @@ export default function KnowledgeBaseView() {
             placeholder="Search policy titles, content, or tags..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-4 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+            className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-4 py-2 text-xs text-slate-900 focus:outline-none focus:border-purple-600 font-medium"
           />
         </div>
 
         <select
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
-          className="bg-slate-950 border border-slate-800 text-xs font-semibold text-slate-300 rounded-lg px-3 py-2"
+          className="bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 rounded-lg px-3 py-2 focus:outline-none focus:border-purple-600"
         >
           <option value="">All Categories</option>
           <option value="Payment">Payment</option>
@@ -110,31 +110,31 @@ export default function KnowledgeBaseView() {
 
       {/* Document Grid */}
       {loading ? (
-        <div className="py-16 text-center text-xs text-slate-400">Loading vector index...</div>
+        <div className="py-16 text-center text-xs text-slate-500">Loading vector index...</div>
       ) : documents.length === 0 ? (
-        <div className="py-16 text-center text-slate-400">No policy documents found.</div>
+        <div className="py-16 text-center text-slate-500">No policy documents found.</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {documents.map((doc) => (
-            <div key={doc._id} className="glass-panel p-5 space-y-3 border-l-4 border-l-emerald-500 hover:border-slate-700 transition-all">
+            <div key={doc._id} className="bg-white p-5 rounded-xl border border-slate-200 border-l-4 border-l-purple-600 shadow-sm space-y-3 hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-emerald-400" />
-                  <h3 className="font-bold text-white text-sm">{doc.title}</h3>
+                  <FileText className="w-4 h-4 text-purple-600" />
+                  <h3 className="font-bold text-slate-900 text-sm">{doc.title}</h3>
                 </div>
-                <span className="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase">
+                <span className="px-2.5 py-0.5 rounded bg-purple-50 border border-purple-200 text-purple-700 text-[10px] font-bold uppercase">
                   {doc.category}
                 </span>
               </div>
 
-              <p className="text-xs text-slate-300 leading-relaxed bg-slate-950 p-3 rounded-lg border border-slate-800 font-mono text-[11px] whitespace-pre-wrap">
+              <p className="text-xs text-slate-700 leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-100 font-mono text-[11px] whitespace-pre-wrap">
                 {doc.content}
               </p>
 
               {doc.tags && doc.tags.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 pt-1">
                   {doc.tags.map((tag, i) => (
-                    <span key={i} className="px-2 py-0.5 bg-slate-800 text-slate-400 text-[10px] rounded border border-slate-700">
+                    <span key={i} className="px-2 py-0.5 bg-slate-100 text-slate-600 text-[10px] font-medium rounded border border-slate-200">
                       #{tag}
                     </span>
                   ))}
@@ -147,29 +147,29 @@ export default function KnowledgeBaseView() {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-800 rounded-xl max-w-lg w-full p-6 shadow-2xl">
-            <h3 className="text-base font-bold text-white mb-4">Upload Policy Document for RAG Vector Indexing</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
+          <div className="bg-white border border-slate-200 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+            <h3 className="text-base font-bold text-slate-900">Upload Policy Document for RAG Vector Indexing</h3>
 
             <form onSubmit={handleUpload} className="space-y-4 text-xs">
               <div>
-                <label className="text-slate-300 font-bold block mb-1">Document Title</label>
+                <label className="text-slate-700 font-semibold block mb-1">Document Title</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Chargeback & Fraud SLA"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-white"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-900 font-medium focus:outline-none focus:border-purple-600"
                 />
               </div>
 
               <div>
-                <label className="text-slate-300 font-bold block mb-1">Category</label>
+                <label className="text-slate-700 font-semibold block mb-1">Category</label>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-white"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-900 font-medium focus:outline-none focus:border-purple-600"
                 >
                   <option value="Payment">Payment</option>
                   <option value="Technical">Technical</option>
@@ -180,25 +180,25 @@ export default function KnowledgeBaseView() {
               </div>
 
               <div>
-                <label className="text-slate-300 font-bold block mb-1">Full Document SOP Content</label>
+                <label className="text-slate-700 font-semibold block mb-1">Full Document SOP Content</label>
                 <textarea
                   required
-                  rows={6}
+                  rows={5}
                   placeholder="Write full company policy instructions..."
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white font-mono text-xs"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-900 font-mono text-xs focus:outline-none focus:border-purple-600"
                 />
               </div>
 
               <div>
-                <label className="text-slate-300 font-bold block mb-1">Comma-separated Tags</label>
+                <label className="text-slate-700 font-semibold block mb-1">Comma-separated Tags</label>
                 <input
                   type="text"
                   placeholder="e.g. payment, refund, double charge"
                   value={tags}
                   onChange={(e) => setTags(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-white"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-900 font-medium focus:outline-none focus:border-purple-600"
                 />
               </div>
 
@@ -206,13 +206,13 @@ export default function KnowledgeBaseView() {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg"
+                  className="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold rounded-lg"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-emerald-600 text-white font-bold rounded-lg shadow"
+                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-sm"
                 >
                   Index & Save Policy
                 </button>

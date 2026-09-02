@@ -55,8 +55,8 @@ export default function SLATimer({ slaDeadline, priority, status }) {
 
   if (['RESOLVED', 'CLOSED'].includes(status)) {
     return (
-      <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium">
-        <CheckCircle2 className="w-4 h-4" />
+      <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-medium">
+        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
         <span>SLA Fulfilled</span>
       </div>
     );
@@ -64,8 +64,8 @@ export default function SLATimer({ slaDeadline, priority, status }) {
 
   if (slaState === 'BREACHED') {
     return (
-      <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-400 text-xs font-semibold animate-pulse">
-        <AlertOctagon className="w-4 h-4" />
+      <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs font-semibold">
+        <AlertOctagon className="w-4 h-4 text-red-600" />
         <span>SLA BREACHED ({timeLeft})</span>
       </div>
     );
@@ -73,16 +73,16 @@ export default function SLATimer({ slaDeadline, priority, status }) {
 
   if (slaState === 'AT_RISK') {
     return (
-      <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-semibold animate-pulse-subtle">
-        <AlertTriangle className="w-4 h-4 text-amber-400" />
+      <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold">
+        <AlertTriangle className="w-4 h-4 text-amber-600" />
         <span>SLA AT RISK ({timeLeft})</span>
       </div>
     );
   }
 
   return (
-    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700 text-slate-300 text-xs font-medium">
-      <Clock className="w-4 h-4 text-indigo-400" />
+    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-200 text-slate-700 text-xs font-medium">
+      <Clock className="w-4 h-4 text-purple-600" />
       <span>SLA {timeLeft}</span>
     </div>
   );

@@ -1,36 +1,45 @@
 import React from 'react';
-import { ListChecks, ArrowRight } from 'lucide-react';
+import { ListChecks, CheckCircle2 } from 'lucide-react';
 
-export default function RecommendationCard({ recommendations = [] }) {
+export default function RecommendationCard({ recommendations }) {
+  const steps = recommendations || [];
+
   return (
-    <div className="glass-panel p-5 border-l-4 border-l-cyan-500">
-      <div className="flex items-center gap-2.5 mb-4">
-        <div className="p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">
-          <ListChecks className="w-5 h-5" />
+    <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+      <div className="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <ListChecks className="w-4 h-4 text-purple-600" />
+          <h3 className="text-sm font-bold text-slate-900">
+            Recommended Action Plan
+          </h3>
         </div>
-        <div>
-          <h3 className="text-sm font-semibold text-white uppercase tracking-wider">AI Recommended Resolution Plan</h3>
-          <p className="text-xs text-slate-400">Step-by-step action plan for human support agent</p>
-        </div>
+        <span className="text-xs font-semibold px-2 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200">
+          {steps.length} Recommended Steps
+        </span>
       </div>
 
-      {recommendations.length === 0 ? (
-        <p className="text-xs text-slate-400 italic">Recommendation plan generating...</p>
-      ) : (
-        <div className="space-y-3">
-          {recommendations.map((rec, idx) => (
-            <div key={idx} className="flex items-start gap-3 bg-slate-950/60 p-3 rounded-lg border border-slate-800">
-              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 font-bold text-xs shrink-0 mt-0.5">
+      <div className="p-5 space-y-3">
+        {steps.length === 0 ? (
+          <p className="text-slate-500 text-xs italic text-center py-2">
+            No recommendations generated.
+          </p>
+        ) : (
+          steps.map((rec, idx) => (
+            <div
+              key={idx}
+              className="flex items-start space-x-3 p-3 bg-slate-50 rounded-lg border border-slate-100"
+            >
+              <div className="w-6 h-6 rounded-full bg-purple-600 text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
                 {rec.step || idx + 1}
               </div>
-              <div className="flex-1">
-                <h4 className="text-xs font-bold text-slate-200 mb-0.5">{rec.action}</h4>
-                <p className="text-xs text-slate-400 leading-relaxed">{rec.detail}</p>
+              <div className="space-y-0.5">
+                <h4 className="text-xs font-bold text-slate-900">{rec.action}</h4>
+                <p className="text-xs text-slate-600 leading-relaxed">{rec.detail}</p>
               </div>
             </div>
-          ))}
-        </div>
-      )}
+          ))
+        )}
+      </div>
     </div>
   );
 }
