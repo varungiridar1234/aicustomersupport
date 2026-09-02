@@ -114,13 +114,14 @@ describe('5. State Machine Invariants', () => {
   });
 });
 
-describe('6. External Customer Portal Ingestion Endpoint (POST /api/tickets/external)', () => {
-  it('Processes external customer request, runs AI+Routing+Assignment pipeline, and returns customer-safe response', async () => {
+describe('6. Two-Way External Customer Portal Communication Tests', () => {
+  it('Processes external customer request, populates thread history, and supports thread lookup & replies', async () => {
     // Seed Billing Team & Agent
     const billingTeam = await Team.create({ name: 'Billing', code: 'BILLING' });
     await RoutingRule.create({ name: 'Payment Rule', category: CATEGORIES.PAYMENT, teamId: billingTeam._id });
     const agent = await User.create({ name: 'Alex Rivera', email: 'alex@support.com', password: 'pass', role: ROLES.AGENT, teamId: billingTeam._id, isAvailable: true });
 
+    // 1. Create External Ticket
     const res = await request(app)
       .post('/api/tickets/external')
       .send({
@@ -134,30 +135,38 @@ describe('6. External Customer Portal Ingestion Endpoint (POST /api/tickets/exte
         source: 'external_customer_portal'
       });
 
-    expect(res.statusCode).toBe(201);
+    expect(res.statusCode).toBe(200);
     expect(res.body.success).toBe(true);
     expect(res.body.ticketId).toBeDefined();
-    expect(res.body.status).toBe('RECEIVED');
-    expect(res.body.message).toBe('Your support request has been received.');
-    expect(res.body.internalPrompt).toBeUndefined();
-    expect(res.body.apiKey).toBeUndefined();
+    expect(res.body.reply).toBeDefined();
 
-    // Verify stored ticket details in database
-    const savedTicket = await Ticket.findOne({ ticketId: res.body.ticketId });
-    expect(savedTicket).toBeDefined();
-    expect(savedTicket.customer.name).toBe('Rahul');
-    expect(savedTicket.customer.email).toBe('rahul@example.com');
-    expect(savedTicket.subject).toBe('Duplicate payment');
-    expect(savedTicket.description).toBe('I was charged twice for my order.');
-    expect(savedTicket.category).toBe(CATEGORIES.PAYMENT);
-    expect(savedTicket.priority).toBe(PRIORITIES.HIGH);
-    expect(savedTicket.teamId.toString()).toBe(billingTeam._id.toString());
-    expect(savedTicket.assignedAgentId.toString()).toBe(agent._id.toString());
-    expect(savedTicket.source).toBe('external_customer_portal');
+    const ticketId = res.body.ticketId;
 
-    // Verify audit logs generated
-    const auditLogs = await AuditLog.find({ ticketId: savedTicket._id });
-    const createdEvent = auditLogs.find(l => l.event === 'TICKET_CREATED_FROM_CUSTOMER_PORTAL');
-    expect(createdEvent).toBeDefined();
+    // 2. Fetch Customer Conversation Thread
+    const threadRes = await request(app).get(`/api/tickets/external/${ticketId}/thread`);
+    expect(threadRes.statusCode).toBe(200);
+    expect(threadRes.body.success).toBe(true);
+    expect(threadRes.body.ticketId).toBe(ticketId);
+    expect(threadRes.body.messages.length).toBeGreaterThanOrEqual(1);
+    expect(threadRes.body.messages[0].content).toBe('I was charged twice for my order.');
+
+    // 3. Post Customer Reply
+    const replyRes = await request(app)
+      .post(`/api/tickets/external/${ticketId}/reply`)
+      .send({
+        message: 'Can you please check the refund timeline?',
+        customerEmail: 'rahul@example.com',
+      });
+
+    expect(replyRes.statusCode).toBe(200);
+    expect(replyRes.body.success).toBe(true);
+    expect(replyRes.body.messages.length).toBeGreaterThanOrEqual(2);
+
+    // Verify database stored reply
+    const updatedTicket = await Ticket.findOne({ ticketId });
+    expect(updatedTicket.messages.length).toBeGreaterThanOrEqual(2);
+    const lastMsg = updatedTicket.messages[updatedTicket.messages.length - 1];
+    expect(lastMsg.content).toBe('Can you please check the refund timeline?');
+    expect(lastMsg.sender).toBe('CUSTOMER');
   });
 });

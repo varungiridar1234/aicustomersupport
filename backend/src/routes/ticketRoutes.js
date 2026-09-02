@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const {
   createExternalTicket,
+  getExternalTicketThread,
+  addCustomerReply,
   getTickets,
   getTicketById,
   updateTicketStatus,
@@ -11,8 +13,10 @@ const {
 } = require('../controllers/ticketController');
 const { protect } = require('../middleware/auth');
 
-// Official External Customer Portal Request Ingestion API
+// Official External Customer Portal Endpoints (Public)
 router.post('/external', createExternalTicket);
+router.get('/external/:id/thread', getExternalTicketThread);
+router.post('/external/:id/reply', addCustomerReply);
 
 // Internal fallback route
 router.post('/', createExternalTicket);

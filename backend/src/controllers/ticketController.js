@@ -8,6 +8,7 @@ const SLAService = require('../services/slaService');
 const RAGService = require('../services/ragService');
 const AuditService = require('../services/auditService');
 const NotificationService = require('../services/notificationService');
+const PortalCommunicationService = require('../services/portalCommunicationService');
 const { getNextTicketId } = require('../services/sequenceService');
 const { STATUSES, SLA_STATUSES } = require('../config/constants');
 
@@ -93,7 +94,18 @@ exports.createExternalTicket = async (req, res, next) => {
     // 4. Generate persistent atomic Ticket ID
     const ticketId = await getNextTicketId();
 
-    // 5. Store Ticket in Database
+    // 5. Store Ticket in Database with initial message in thread history
+    const initialMessage = {
+      sender: 'CUSTOMER',
+      senderName: customerName,
+      content: message,
+      isCustomerVisible: true,
+      channel,
+      eventType: 'TICKET_CREATED',
+      timestamp: new Date(),
+      deliveryStatus: 'DELIVERED',
+    };
+
     const ticket = await Ticket.create({
       ticketId,
       customer: {
@@ -106,6 +118,7 @@ exports.createExternalTicket = async (req, res, next) => {
       subject,
       description: message,
       status: STATUSES.NEW,
+      messages: [initialMessage],
     });
 
     // 6. Audit Log
@@ -118,7 +131,17 @@ exports.createExternalTicket = async (req, res, next) => {
       metadata: { channel, source, customerEmail },
     });
 
-    // 7. Trigger AI Classification, Routing, SLA, RAG, and Draft generation safely
+    // 7. Dispatch Initial Ticket Created Notification to Portal
+    await PortalCommunicationService.dispatchPortalNotification({
+      ticket,
+      eventType: 'TICKET_CREATED',
+      messageContent: `Your support ticket ${ticket.ticketId} has been successfully submitted. Our team is processing your request.`,
+      sender: 'SYSTEM',
+      senderName: 'ResolvAI System',
+      metadata: { status: ticket.status },
+    });
+
+    // 8. Trigger AI Classification, Routing, SLA, RAG, and Draft generation safely
     try {
       const classification = await AIService.classifyTicket(subject, message);
       ticket.category = classification.category;
@@ -162,6 +185,16 @@ exports.createExternalTicket = async (req, res, next) => {
       ticket.draftResponse = customerDraft;
       await ticket.save();
 
+      // Dispatch Classification event to Portal
+      await PortalCommunicationService.dispatchPortalNotification({
+        ticket,
+        eventType: 'TICKET_CLASSIFIED',
+        messageContent: `Ticket classified under ${classification.category} (${classification.priority} Priority). Assigned to support team.`,
+        sender: 'SYSTEM',
+        senderName: 'ResolvAI System',
+        metadata: { category: classification.category, priority: classification.priority },
+      });
+
       NotificationService.broadcastTicketUpdate({
         type: 'TICKET_CREATED',
         ticketId: ticket._id,
@@ -172,7 +205,7 @@ exports.createExternalTicket = async (req, res, next) => {
       console.error('[createExternalTicket] Non-fatal AI pipeline warning:', aiPipelineError.message);
     }
 
-    // 8. Return Comprehensive Customer-Safe Response for Portal & Chatbots
+    // 9. Return Comprehensive Customer-Safe Response for Portal & Chatbots
     const successMsg = `Your support request has been submitted successfully. Ticket ID: ${ticket.ticketId}. Our support team is processing your request.`;
 
     return res.status(200).json({
@@ -180,7 +213,7 @@ exports.createExternalTicket = async (req, res, next) => {
       ticketId: ticket.ticketId,
       ticket_id: ticket.ticketId,
       id: ticket.ticketId,
-      status: 'RECEIVED',
+      status: ticket.status || 'RECEIVED',
       message: successMsg,
       reply: successMsg,
       response: successMsg,
@@ -188,7 +221,8 @@ exports.createExternalTicket = async (req, res, next) => {
       ticket: {
         ticketId: ticket.ticketId,
         subject: ticket.subject,
-        status: 'RECEIVED',
+        status: ticket.status,
+        messages: ticket.messages,
       },
     });
 
@@ -209,6 +243,127 @@ exports.createExternalTicket = async (req, res, next) => {
  * Public Ticket Ingestion endpoint (Delegates to createExternalTicket)
  */
 exports.createTicket = exports.createExternalTicket;
+
+/**
+ * Customer Portal Conversation Thread & Ticket Status Endpoint
+ * GET /api/tickets/external/:id/thread
+ */
+exports.getExternalTicketThread = async (req, res, next) => {
+  try {
+    const ticket = await findTicketByIdOrCode(req.params.id);
+
+    if (!ticket) {
+      return res.status(404).json({
+        success: false,
+        message: 'Ticket not found. Please check your Ticket ID.',
+      });
+    }
+
+    const liveSLAStatus = SLAService.evaluateSLAStatus(
+      ticket.slaDeadline,
+      ticket.priority,
+      ticket.status
+    );
+    const remainingText = SLAService.formatRemainingTime(ticket.slaDeadline);
+
+    // Filter customer-visible messages
+    const visibleMessages = (ticket.messages || []).filter((m) => m.isCustomerVisible !== false);
+
+    res.status(200).json({
+      success: true,
+      ticketId: ticket.ticketId,
+      subject: ticket.subject,
+      description: ticket.description,
+      status: ticket.status,
+      category: ticket.category,
+      priority: ticket.priority,
+      customer: {
+        name: ticket.customer.name,
+        email: ticket.customer.email,
+      },
+      slaStatus: liveSLAStatus,
+      slaRemainingText: remainingText,
+      createdAt: ticket.createdAt,
+      updatedAt: ticket.updatedAt,
+      messages: visibleMessages,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Customer Portal Reply Endpoint
+ * POST /api/tickets/external/:id/reply
+ */
+exports.addCustomerReply = async (req, res, next) => {
+  try {
+    const { message, customerEmail } = req.body;
+    if (!message || !message.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Message content is required to post a reply.',
+      });
+    }
+
+    const ticket = await findTicketByIdOrCode(req.params.id);
+    if (!ticket) {
+      return res.status(404).json({
+        success: false,
+        message: 'Ticket not found.',
+      });
+    }
+
+    const replyContent = message.trim();
+    const senderName = ticket.customer ? ticket.customer.name : 'Customer';
+
+    // 1. Add Customer Reply to Messages Thread
+    ticket.messages.push({
+      sender: 'CUSTOMER',
+      senderName,
+      content: replyContent,
+      isCustomerVisible: true,
+      channel: ticket.channel || 'customer_portal',
+      eventType: 'CUSTOMER_REPLY',
+      timestamp: new Date(),
+      deliveryStatus: 'DELIVERED',
+    });
+
+    // 2. Transition status if ticket was resolved/closed or waiting
+    if ([STATUSES.RESOLVED, STATUSES.CLOSED, STATUSES.WAITING_FOR_CUSTOMER].includes(ticket.status)) {
+      ticket.status = STATUSES.IN_PROGRESS;
+    }
+
+    await ticket.save();
+
+    // 3. Log Audit Event
+    await AuditService.logEvent({
+      ticketId: ticket._id,
+      ticketCode: ticket.ticketId,
+      event: 'CUSTOMER_REPLIED',
+      actor: { name: senderName, role: 'CUSTOMER' },
+      details: `Customer replied on ticket ${ticket.ticketId}: "${replyContent.substring(0, 80)}..."`,
+      metadata: { replyLength: replyContent.length },
+    });
+
+    // 4. Notify Agent Dashboard in real time
+    NotificationService.broadcastTicketUpdate({
+      type: 'CUSTOMER_REPLIED',
+      ticketId: ticket._id,
+      ticketCode: ticket.ticketId,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Reply posted successfully.',
+      ticketId: ticket.ticketId,
+      status: ticket.status,
+      messages: ticket.messages.filter((m) => m.isCustomerVisible !== false),
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 /**
  * Get List of Tickets with Filters & Live SLA Recalculation
@@ -239,8 +394,7 @@ exports.getTickets = async (req, res, next) => {
       .sort({ createdAt: -1 })
       .lean();
 
-    // Recalculate SLA statuses dynamically
-    const updatedTickets = tickets.map(ticket => {
+    const updatedTickets = tickets.map((ticket) => {
       const liveSLAStatus = SLAService.evaluateSLAStatus(
         ticket.slaDeadline ? new Date(ticket.slaDeadline) : null,
         ticket.priority,
@@ -251,6 +405,7 @@ exports.getTickets = async (req, res, next) => {
       );
       return {
         ...ticket,
+        id: ticket._id ? ticket._id.toString() : ticket.ticketId,
         slaStatus: liveSLAStatus,
         slaRemainingText: remainingText,
       };
@@ -328,6 +483,16 @@ exports.updateTicketStatus = async (req, res, next) => {
       metadata: { previousStatus, newStatus: status },
     });
 
+    // Dispatch Outgoing Portal Notification
+    await PortalCommunicationService.dispatchPortalNotification({
+      ticket,
+      eventType: 'STATUS_CHANGED',
+      messageContent: `Your support ticket status has been updated to: ${status}.`,
+      sender: 'SYSTEM',
+      senderName: 'ResolvAI System',
+      metadata: { status },
+    });
+
     NotificationService.broadcastTicketUpdate({
       type: 'STATUS_CHANGED',
       ticketId: ticket._id,
@@ -358,7 +523,6 @@ exports.approveDraft = async (req, res, next) => {
     ticket.approvedResponse = finalResponse;
     ticket.isDraftApproved = true;
 
-    // Advance status to IN_PROGRESS or RESOLVED if agent approves
     if ([STATUSES.NEW, STATUSES.UNCLASSIFIED, STATUSES.ASSIGNED].includes(ticket.status)) {
       ticket.status = STATUSES.IN_PROGRESS;
     }
@@ -374,14 +538,15 @@ exports.approveDraft = async (req, res, next) => {
       metadata: { finalResponseLength: finalResponse.length },
     });
 
-    // Simulate returning customer update via originating channel
-    await AuditService.logEvent({
-      ticketId: ticket._id,
-      ticketCode: ticket.ticketId,
-      event: 'CUSTOMER_UPDATED',
-      actor: req.user,
-      details: `Customer update dispatched via originating channel: ${ticket.channel}`,
-      metadata: { channel: ticket.channel, recipient: ticket.customer.email },
+    // Dispatch Approved Response to Customer Portal Conversation Thread
+    await PortalCommunicationService.dispatchPortalNotification({
+      ticket,
+      eventType: 'RESPONSE_APPROVED',
+      messageContent: finalResponse,
+      sender: 'AGENT',
+      senderName: req.user ? req.user.name : 'Support Agent',
+      isCustomerVisible: true,
+      metadata: { status: ticket.status },
     });
 
     NotificationService.broadcastTicketUpdate({
@@ -392,7 +557,7 @@ exports.approveDraft = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: `Response approved and dispatched to customer via ${ticket.channel}`,
+      message: `Response approved and dispatched to Customer Support Request Portal via ${ticket.channel}`,
       ticket,
     });
   } catch (error) {
@@ -446,7 +611,6 @@ exports.resolveTicket = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Ticket not found' });
     }
 
-    // Strict Linear Transformation Rule: Draft MUST be approved first!
     if (!ticket.isDraftApproved && !ticket.approvedResponse) {
       return res.status(400).json({
         success: false,
@@ -454,7 +618,6 @@ exports.resolveTicket = async (req, res, next) => {
       });
     }
 
-    // Backend validates transition (Cannot jump directly from ASSIGNED without IN_PROGRESS approval step)
     StateMachine.validateTransition(ticket.status, STATUSES.RESOLVED);
 
     ticket.status = STATUSES.RESOLVED;
@@ -471,14 +634,14 @@ exports.resolveTicket = async (req, res, next) => {
       metadata: { resolutionNotes: ticket.resolutionNotes },
     });
 
-    // Notify customer via channel
-    await AuditService.logEvent({
-      ticketId: ticket._id,
-      ticketCode: ticket.ticketId,
-      event: 'CUSTOMER_NOTIFICATION_SENT',
-      actor: null,
-      details: `Final resolution notification sent to ${ticket.customer.email} via ${ticket.channel}`,
-      metadata: { channel: ticket.channel },
+    // Dispatch Resolution Notification to Customer Portal Conversation Thread
+    await PortalCommunicationService.dispatchPortalNotification({
+      ticket,
+      eventType: 'TICKET_RESOLVED',
+      messageContent: `Your ticket has been marked as RESOLVED. Resolution notes: ${ticket.resolutionNotes}`,
+      sender: 'AGENT',
+      senderName: req.user ? req.user.name : 'Support Agent',
+      metadata: { status: STATUSES.RESOLVED },
     });
 
     NotificationService.broadcastTicketUpdate({

@@ -13,6 +13,25 @@ const ticketSchema = new mongoose.Schema({
   subject: { type: String, required: true },
   description: { type: String, required: true },
   
+  // Two-Way Conversation Message Thread History
+  messages: [{
+    messageId: { type: String, default: () => new mongoose.Types.ObjectId().toString() },
+    sender: { type: String, enum: ['CUSTOMER', 'AGENT', 'AI', 'SYSTEM'], required: true },
+    senderName: { type: String, default: '' },
+    content: { type: String, required: true },
+    isCustomerVisible: { type: Boolean, default: true },
+    channel: { type: String, default: 'customer_portal' },
+    eventType: { type: String, default: 'GENERAL' },
+    timestamp: { type: Date, default: Date.now },
+    deliveryStatus: { type: String, enum: ['PENDING', 'DELIVERED', 'FAILED'], default: 'DELIVERED' },
+  }],
+
+  // Notification deduplication tracking
+  dispatchedNotifications: [{
+    eventType: { type: String, required: true },
+    dispatchedAt: { type: Date, default: Date.now },
+  }],
+
   // AI Classification
   category: { type: String, enum: [...Object.values(CATEGORIES), null], default: null },
   priority: { type: String, enum: [...Object.values(PRIORITIES), null], default: null },

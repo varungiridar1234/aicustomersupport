@@ -23,6 +23,7 @@ import AIAnalysisCard from '../components/ui/AIAnalysisCard';
 import KnowledgeCard from '../components/ui/KnowledgeCard';
 import RecommendationCard from '../components/ui/RecommendationCard';
 import DraftResponseCard from '../components/ui/DraftResponseCard';
+import CustomerConversationCard from '../components/ui/CustomerConversationCard';
 import AuditTimeline from '../components/ui/AuditTimeline';
 
 export default function TicketDetail() {
@@ -75,6 +76,21 @@ export default function TicketDetail() {
     }
   };
 
+  const handleSendPortalReply = async (replyText) => {
+    try {
+      setActionLoading(true);
+      const res = await api.post(`/tickets/${id}/approve`, { editedResponse: replyText });
+      if (res.data.success) {
+        setMessage({ type: 'success', text: 'Outgoing message successfully dispatched to Customer Portal thread!' });
+        await fetchTicketDetails();
+      }
+    } catch (err) {
+      setMessage({ type: 'error', text: err.response?.data?.message || 'Error dispatching message to Portal' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleRejectDraft = async () => {
     try {
       setActionLoading(true);
@@ -98,11 +114,14 @@ export default function TicketDetail() {
       });
       return;
     }
+
     try {
       setActionLoading(true);
-      const res = await api.post(`/tickets/${id}/resolve`, { resolutionNotes: 'Resolved by agent following policy guidelines.' });
+      const res = await api.post(`/tickets/${id}/resolve`, {
+        resolutionNotes: 'Ticket verified and resolved after human agent review.',
+      });
       if (res.data.success) {
-        setMessage({ type: 'success', text: 'Ticket successfully RESOLVED.' });
+        setMessage({ type: 'success', text: res.data.message });
         await fetchTicketDetails();
       }
     } catch (err) {
@@ -112,32 +131,26 @@ export default function TicketDetail() {
     }
   };
 
-  const handleReanalyze = async () => {
-    try {
-      setActionLoading(true);
-      await api.post(`/tickets/${id}/analyze`);
-      await fetchTicketDetails();
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
   if (loading) {
     return (
-      <div className="py-24 text-center text-slate-400 flex items-center justify-center gap-2">
-        <RefreshCw className="w-5 h-5 animate-spin text-brand-500" />
-        <span>Loading ticket details & intelligence context...</span>
+      <div className="flex items-center justify-center min-h-[600px]">
+        <div className="text-center space-y-4">
+          <RefreshCw className="w-8 h-8 text-brand-500 animate-spin mx-auto" />
+          <p className="text-slate-400 text-sm">Loading Ticket Command Center...</p>
+        </div>
       </div>
     );
   }
 
   if (!ticket) {
     return (
-      <div className="py-24 text-center text-slate-400">
-        <h2 className="text-lg font-bold text-white mb-2">Ticket Not Found</h2>
-        <button onClick={() => navigate('/dashboard')} className="px-4 py-2 bg-slate-800 text-white rounded-lg text-xs font-semibold">
+      <div className="p-8 text-center glass-panel">
+        <h2 className="text-xl font-bold text-white mb-2">Ticket Not Found</h2>
+        <p className="text-slate-400 text-sm mb-4">The requested ticket ID does not exist or has been removed.</p>
+        <button
+          onClick={() => navigate('/dashboard')}
+          className="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-semibold"
+        >
           Return to Dashboard
         </button>
       </div>
@@ -146,7 +159,7 @@ export default function TicketDetail() {
 
   return (
     <div className="space-y-6">
-      {/* Top Action Header Bar */}
+      {/* Top Header & Actions Bar */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-800">
         <div className="flex items-center gap-4">
           <button
@@ -297,42 +310,43 @@ export default function TicketDetail() {
 
         {/* CENTER COLUMN: AI Intelligence & Approval Workflow (6 Cols) */}
         <div className="lg:col-span-6 space-y-6">
+          {/* Two-Way Customer Conversation Card */}
+          <CustomerConversationCard
+            ticket={ticket}
+            onSendReply={handleSendPortalReply}
+            loading={actionLoading}
+          />
+
           {/* AI Ticket Classification Card */}
           <AIAnalysisCard
             category={ticket.category}
             priority={ticket.priority}
             confidence={ticket.confidence}
             reason={ticket.classificationReason}
-            onReanalyze={handleReanalyze}
-            isAnalyzing={actionLoading}
           />
 
-          {/* Knowledge Base RAG Policy Context Card */}
-          <KnowledgeCard
-            retrievedKnowledge={ticket.retrievedKnowledge || []}
-          />
+          {/* AI Step-by-Step Resolution Recommendations */}
+          <RecommendationCard recommendations={ticket.aiRecommendation} />
 
-          {/* AI Recommended Resolution Plan */}
-          <RecommendationCard
-            recommendations={ticket.aiRecommendation || []}
-          />
-
-          {/* Customer Response Draft & Human Approval Workflow */}
+          {/* Human-in-the-Loop AI Response Draft Approval */}
           <DraftResponseCard
             draftResponse={ticket.draftResponse}
-            isApproved={ticket.isDraftApproved}
             approvedResponse={ticket.approvedResponse}
+            isDraftApproved={ticket.isDraftApproved}
             onApprove={handleApproveDraft}
             onReject={handleRejectDraft}
-            channel={ticket.channel}
+            loading={actionLoading}
           />
         </div>
 
-        {/* RIGHT COLUMN: Audit Log Timeline (3 Cols) */}
-        <div className="lg:col-span-3">
-          <AuditTimeline auditLogs={auditLogs} />
-        </div>
+        {/* RIGHT COLUMN: RAG Knowledge Grounding & Audit Trail (3 Cols) */}
+        <div className="lg:col-span-3 space-y-5">
+          {/* Grounded Knowledge Documents Card */}
+          <KnowledgeCard retrievedKnowledge={ticket.retrievedKnowledge} />
 
+          {/* Audit & State Machine Event Logs */}
+          <AuditTimeline logs={auditLogs} />
+        </div>
       </div>
     </div>
   );
