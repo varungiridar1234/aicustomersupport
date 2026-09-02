@@ -4,7 +4,6 @@ import AppLayout from './components/layout/AppLayout';
 import Login from './pages/Login';
 import AgentDashboard from './pages/AgentDashboard';
 import TicketDetail from './pages/TicketDetail';
-import TicketIngestion from './pages/TicketIngestion';
 import AdminDashboard from './pages/AdminDashboard';
 import KnowledgeBaseView from './pages/KnowledgeBaseView';
 
@@ -27,9 +26,9 @@ export default function App() {
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<AgentDashboard />} />
           <Route path="/tickets/:id" element={<TicketDetail />} />
-          <Route path="/ingest" element={<TicketIngestion />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/knowledge" element={<KnowledgeBaseView />} />
+          <Route path="/ingest" element={<Navigate to="/dashboard" replace />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/login" replace />} />

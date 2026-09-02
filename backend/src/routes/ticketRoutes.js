@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const {
-  createTicket,
+  createExternalTicket,
   getTickets,
   getTicketById,
   updateTicketStatus,
@@ -11,10 +11,13 @@ const {
 } = require('../controllers/ticketController');
 const { protect } = require('../middleware/auth');
 
-// Public ingestion endpoint
-router.post('/', createTicket);
+// Official External Customer Portal Request Ingestion API
+router.post('/external', createExternalTicket);
 
-// Authenticated ticket endpoints
+// Internal fallback route
+router.post('/', createExternalTicket);
+
+// Authenticated internal ticket endpoints
 router.get('/', protect, getTickets);
 router.get('/:id', protect, getTicketById);
 router.patch('/:id/status', protect, updateTicketStatus);

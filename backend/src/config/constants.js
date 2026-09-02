@@ -9,6 +9,7 @@ module.exports = {
     WHATSAPP: 'WhatsApp',
     CHATBOT: 'Chatbot',
     WEB_FORM: 'Web Form',
+    CUSTOMER_PORTAL: 'customer_portal',
   },
   CATEGORIES: {
     PAYMENT: 'Payment',

@@ -88,14 +88,6 @@ export default function AgentDashboard() {
             <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
             Refresh Queue
           </button>
-          
-          <button
-            onClick={() => navigate('/ingest')}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold shadow-lg shadow-brand-600/20 transition-all hover:scale-[1.02]"
-          >
-            <PlusCircle className="w-4 h-4" />
-            Simulate Ingestion
-          </button>
         </div>
       </div>
 
@@ -223,13 +215,9 @@ export default function AgentDashboard() {
         ) : tickets.length === 0 ? (
           <div className="py-16 text-center text-slate-400">
             <p className="text-sm font-semibold mb-1">No tickets match criteria</p>
-            <p className="text-xs text-slate-500 mb-4">Try adjusting search query or click below to submit a new test ticket.</p>
-            <button
-              onClick={() => navigate('/ingest')}
-              className="px-4 py-2 bg-brand-600 text-white font-semibold text-xs rounded-lg shadow-md"
-            >
-              Ingest Test Ticket
-            </button>
+            <p className="text-xs text-slate-500">
+              Customer support requests are submitted through the external Customer Service Request Portal and will appear here automatically.
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">

@@ -8,7 +8,8 @@ const ticketSchema = new mongoose.Schema({
     email: { type: String, required: true },
     phone: { type: String, default: '' },
   },
-  channel: { type: String, enum: Object.values(CHANNELS), required: true },
+  channel: { type: String, default: 'customer_portal' },
+  source: { type: String, default: 'external_customer_portal' },
   subject: { type: String, required: true },
   description: { type: String, required: true },
   

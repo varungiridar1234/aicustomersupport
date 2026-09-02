@@ -54,7 +54,6 @@ export default function AppLayout() {
 
   const navItems = [
     { label: 'Agent Dashboard', path: '/dashboard', icon: LayoutDashboard, role: 'ALL' },
-    { label: 'Ingest Ticket', path: '/ingest', icon: PlusCircle, role: 'ALL' },
     { label: 'Knowledge Base', path: '/knowledge', icon: BookOpen, role: 'ALL' },
     { label: 'Admin Command', path: '/admin', icon: Shield, role: 'ADMIN' },
   ];

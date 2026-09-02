@@ -24,155 +24,188 @@ const findTicketByIdOrCode = async (idOrCode) => {
 };
 
 /**
- * Public Ticket Ingestion endpoint
+ * Official External Customer Service Portal Ingestion API Endpoint
+ * POST /api/tickets/external
  */
-exports.createTicket = async (req, res, next) => {
+exports.createExternalTicket = async (req, res, next) => {
   try {
-    const { customerName, customerEmail, customerPhone, channel, subject, description } = req.body;
+    // 1. Extract customer & request payload (supports nested customer object or flat structure)
+    const customerObj = req.body.customer || {};
+    const customerName = (customerObj.name || req.body.customerName || req.body.name || '').trim();
+    const customerEmail = (customerObj.email || req.body.customerEmail || req.body.email || '').trim();
+    const customerPhone = (customerObj.phone || req.body.customerPhone || '').trim();
+    const subject = (req.body.subject || '').trim();
+    const message = (req.body.message || req.body.description || '').trim();
+    const channel = req.body.channel || 'customer_portal';
+    const source = req.body.source || 'external_customer_portal';
 
-    if (!customerName || !customerEmail || !channel || !subject || !description) {
-      return res.status(400).json({ success: false, message: 'Please provide all required fields' });
+    // 2. Validate input fields
+    if (!customerName || !customerEmail || !subject || !message) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid request payload. 'customer.name', 'customer.email', 'subject', and 'message' are required.",
+      });
     }
 
-    // Generate unique Ticket ID
+    // 3. Generate unique Ticket ID
     const count = await Ticket.countDocuments();
     const ticketId = `TICK-${1024 + count}`;
 
-    // 1. Create Ticket in NEW state
+    // 4. Store initial Ticket in database (Ignore untrusted client fields like priority, category, team, etc.)
     const ticket = await Ticket.create({
       ticketId,
       customer: {
         name: customerName,
         email: customerEmail,
-        phone: customerPhone || '',
+        phone: customerPhone,
       },
       channel,
+      source,
       subject,
-      description,
+      description: message,
       status: STATUSES.NEW,
     });
 
+    // 5. Audit Log: Record TICKET_CREATED_FROM_CUSTOMER_PORTAL
     await AuditService.logEvent({
       ticketId: ticket._id,
       ticketCode: ticket.ticketId,
-      event: 'TICKET_CREATED',
-      actor: null,
-      details: `Ticket submitted via ${channel} channel by ${customerName}`,
-      metadata: { channel, customerEmail },
+      event: 'TICKET_CREATED_FROM_CUSTOMER_PORTAL',
+      actor: { name: 'EXTERNAL_CUSTOMER_PORTAL', role: 'EXTERNAL' },
+      details: `Support request received from external Customer Service Request Portal by ${customerName} (${customerEmail})`,
+      metadata: { channel, source, customerEmail },
     });
 
-    // 2. Trigger AI Classification
-    const classification = await AIService.classifyTicket(subject, description);
-    
-    ticket.category = classification.category;
-    ticket.priority = classification.priority;
-    ticket.confidence = classification.confidence;
-    ticket.classificationReason = classification.reason;
-    ticket.status = STATUSES.UNCLASSIFIED;
-    await ticket.save();
-
-    await AuditService.logEvent({
-      ticketId: ticket._id,
-      ticketCode: ticket.ticketId,
-      event: 'AI_CLASSIFIED',
-      actor: null,
-      details: `AI Classified as Category: ${classification.category}, Priority: ${classification.priority} (${(classification.confidence * 100).toFixed(0)}% confidence)`,
-      metadata: classification,
-    });
-
-    // 3. Trigger Routing & SLA Calculation
-    const targetTeamId = await RoutingService.resolveTeam(classification.category, classification.priority);
-    ticket.teamId = targetTeamId;
-
-    const slaDeadline = await SLAService.calculateDeadline(classification.priority, ticket.createdAt);
-    ticket.slaDeadline = slaDeadline;
-    ticket.slaStatus = SLA_STATUSES.ON_TRACK;
-    await ticket.save();
-
-    if (targetTeamId) {
-      await AuditService.logEvent({
-        ticketId: ticket._id,
-        ticketCode: ticket.ticketId,
-        event: 'ROUTED_TO_TEAM',
-        actor: null,
-        details: `Routed to Team ID ${targetTeamId} based on routing matrix`,
-        metadata: { teamId: targetTeamId },
-      });
-    }
-
-    // 4. Trigger Workload-Based Agent Assignment
-    const assignedAgentId = await AssignmentService.assignTicketToAgent(ticket, targetTeamId);
-    if (assignedAgentId) {
-      ticket.assignedAgentId = assignedAgentId;
-      ticket.status = STATUSES.ASSIGNED;
+    // 6. Trigger Existing AI + Routing + Assignment + SLA + RAG Pipeline safely
+    try {
+      // AI Classification
+      const classification = await AIService.classifyTicket(subject, message);
+      ticket.category = classification.category;
+      ticket.priority = classification.priority;
+      ticket.confidence = classification.confidence;
+      ticket.classificationReason = classification.reason;
+      ticket.status = STATUSES.UNCLASSIFIED;
       await ticket.save();
 
       await AuditService.logEvent({
         ticketId: ticket._id,
         ticketCode: ticket.ticketId,
-        event: 'AGENT_ASSIGNED',
+        event: 'AI_CLASSIFIED',
         actor: null,
-        details: `Automatically assigned to Agent ID ${assignedAgentId} based on workload score`,
-        metadata: { assignedAgentId },
+        details: `AI Classified as Category: ${classification.category}, Priority: ${classification.priority} (${(classification.confidence * 100).toFixed(0)}% confidence)`,
+        metadata: classification,
       });
 
-      // Send real-time notification to agent
-      await NotificationService.sendNotification({
-        recipientId: assignedAgentId,
-        title: `New Ticket Assigned: ${ticket.ticketId}`,
-        message: `[${ticket.priority}] ${ticket.subject}`,
-        type: 'ASSIGNMENT',
+      // Routing & SLA Calculation
+      const targetTeamId = await RoutingService.resolveTeam(classification.category, classification.priority);
+      ticket.teamId = targetTeamId;
+
+      const slaDeadline = await SLAService.calculateDeadline(classification.priority, ticket.createdAt);
+      ticket.slaDeadline = slaDeadline;
+      ticket.slaStatus = SLA_STATUSES.ON_TRACK;
+      await ticket.save();
+
+      if (targetTeamId) {
+        await AuditService.logEvent({
+          ticketId: ticket._id,
+          ticketCode: ticket.ticketId,
+          event: 'ROUTED_TO_TEAM',
+          actor: null,
+          details: `Routed to Team ID ${targetTeamId} based on routing matrix`,
+          metadata: { teamId: targetTeamId },
+        });
+      }
+
+      // Workload-Based Agent Assignment
+      const assignedAgentId = await AssignmentService.assignTicketToAgent(ticket, targetTeamId);
+      if (assignedAgentId) {
+        ticket.assignedAgentId = assignedAgentId;
+        ticket.status = STATUSES.ASSIGNED;
+        await ticket.save();
+
+        await AuditService.logEvent({
+          ticketId: ticket._id,
+          ticketCode: ticket.ticketId,
+          event: 'AGENT_ASSIGNED',
+          actor: null,
+          details: `Automatically assigned to Agent ID ${assignedAgentId} based on workload score`,
+          metadata: { assignedAgentId },
+        });
+
+        // Send real-time notification to agent
+        await NotificationService.sendNotification({
+          recipientId: assignedAgentId,
+          title: `New Ticket Assigned: ${ticket.ticketId}`,
+          message: `[${ticket.priority}] ${ticket.subject}`,
+          type: 'ASSIGNMENT',
+          ticketId: ticket._id,
+          ticketCode: ticket.ticketId,
+        });
+      }
+
+      // RAG Knowledge Retrieval
+      const knowledgeDocs = await RAGService.retrieveRelevantKnowledge(subject, message, classification.category, 3);
+      ticket.retrievedKnowledge = knowledgeDocs;
+
+      await AuditService.logEvent({
+        ticketId: ticket._id,
+        ticketCode: ticket.ticketId,
+        event: 'RAG_KNOWLEDGE_RETRIEVED',
+        actor: null,
+        details: `Retrieved ${knowledgeDocs.length} policy documents from Knowledge Base vector index`,
+        metadata: { docTitles: knowledgeDocs.map(d => d.title) },
+      });
+
+      // AI Recommendation & Customer Draft Response
+      const recommendations = await AIService.generateRecommendation(ticket, knowledgeDocs);
+      ticket.aiRecommendation = recommendations;
+
+      const customerDraft = await AIService.generateCustomerDraft(ticket, knowledgeDocs, recommendations);
+      ticket.draftResponse = customerDraft;
+      await ticket.save();
+
+      await AuditService.logEvent({
+        ticketId: ticket._id,
+        ticketCode: ticket.ticketId,
+        event: 'AI_RECOMMENDATION_GENERATED',
+        actor: null,
+        details: `AI generated step-by-step resolution plan and customer-facing draft response`,
+        metadata: { draftLength: customerDraft.length },
+      });
+
+      // Broadcast real-time Socket.IO ticket event
+      NotificationService.broadcastTicketUpdate({
+        type: 'TICKET_CREATED',
         ticketId: ticket._id,
         ticketCode: ticket.ticketId,
       });
+
+    } catch (aiPipelineError) {
+      console.error('[createExternalTicket] Non-fatal AI/Routing pipeline error:', aiPipelineError.message);
+      // Ticket remains safely stored in DB even if AI pipeline hits a temporary issue
     }
 
-    // 5. Trigger Knowledge RAG + AI Recommendation & Customer Draft
-    const knowledgeDocs = await RAGService.retrieveRelevantKnowledge(subject, description, classification.category, 3);
-    ticket.retrievedKnowledge = knowledgeDocs;
-
-    await AuditService.logEvent({
-      ticketId: ticket._id,
-      ticketCode: ticket.ticketId,
-      event: 'RAG_KNOWLEDGE_RETRIEVED',
-      actor: null,
-      details: `Retrieved ${knowledgeDocs.length} policy documents from Knowledge Base vector index`,
-      metadata: { docTitles: knowledgeDocs.map(d => d.title) },
-    });
-
-    const recommendations = await AIService.generateRecommendation(ticket, knowledgeDocs);
-    ticket.aiRecommendation = recommendations;
-
-    const customerDraft = await AIService.generateCustomerDraft(ticket, knowledgeDocs, recommendations);
-    ticket.draftResponse = customerDraft;
-    await ticket.save();
-
-    await AuditService.logEvent({
-      ticketId: ticket._id,
-      ticketCode: ticket.ticketId,
-      event: 'AI_RECOMMENDATION_GENERATED',
-      actor: null,
-      details: `AI generated step-by-step resolution plan and customer-facing draft response`,
-      metadata: { draftLength: customerDraft.length },
-    });
-
-    // Broadcast ticket created event
-    NotificationService.broadcastTicketUpdate({
-      type: 'TICKET_CREATED',
-      ticketId: ticket._id,
-      ticketCode: ticket.ticketId,
-    });
-
-    const populatedTicket = await findTicketByIdOrCode(ticket._id);
-
-    res.status(201).json({
+    // 7. Return Customer-Safe API Response (DO NOT expose internal prompts, keys, or stack traces)
+    return res.status(201).json({
       success: true,
-      ticket: populatedTicket,
+      ticketId: ticket.ticketId,
+      status: 'RECEIVED',
+      message: 'Your support request has been received.',
     });
+
   } catch (error) {
-    next(error);
+    console.error('[createExternalTicket] Customer request ingestion error:', error.message);
+    return res.status(500).json({
+      success: false,
+      message: 'An error occurred while processing your support request. Please try again later.',
+    });
   }
 };
+
+/**
+ * Public Ticket Ingestion endpoint (Delegates to createExternalTicket)
+ */
+exports.createTicket = exports.createExternalTicket;
 
 /**
  * Get List of Tickets with Filters & Live SLA Recalculation

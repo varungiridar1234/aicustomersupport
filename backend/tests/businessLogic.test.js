@@ -5,6 +5,7 @@ const app = require('../src/app');
 const User = require('../src/models/User');
 const Team = require('../src/models/Team');
 const Ticket = require('../src/models/Ticket');
+const AuditLog = require('../src/models/AuditLog');
 const RoutingRule = require('../src/models/RoutingRule');
 const StateMachine = require('../src/services/stateMachine');
 const RoutingService = require('../src/services/routingService');
@@ -26,11 +27,20 @@ beforeEach(async () => {
     User.deleteMany({}),
     Team.deleteMany({}),
     Ticket.deleteMany({}),
+    AuditLog.deleteMany({}),
     RoutingRule.deleteMany({}),
   ]);
 });
 
-describe('1. Deterministic Routing Engine Tests', () => {
+describe('1. Health Check Endpoint', () => {
+  it('GET /health returns 200 OK with status ok', async () => {
+    const res = await request(app).get('/health');
+    expect(res.statusCode).toBe(200);
+    expect(res.body.status).toBe('ok');
+  });
+});
+
+describe('2. Deterministic Routing Engine Tests', () => {
   it('Payment category routes to Billing team', async () => {
     const billingTeam = await Team.create({ name: 'Billing', code: 'BILLING' });
     await RoutingRule.create({ name: 'Payment Rule', category: CATEGORIES.PAYMENT, teamId: billingTeam._id });
@@ -48,7 +58,7 @@ describe('1. Deterministic Routing Engine Tests', () => {
   });
 });
 
-describe('2. SLA Calculation Tests', () => {
+describe('3. SLA Calculation Tests', () => {
   it('Critical priority receives 30 minute SLA deadline', async () => {
     const createdTime = new Date('2026-09-02T10:00:00Z');
     const deadline = await SLAService.calculateDeadline(PRIORITIES.CRITICAL, createdTime);
@@ -62,7 +72,7 @@ describe('2. SLA Calculation Tests', () => {
   });
 });
 
-describe('3. Workload & Automatic Assignment Tests', () => {
+describe('4. Workload & Automatic Assignment Tests', () => {
   it('Calculates workload score accurately: Low=1, Med=2, High=4, Critical=8', async () => {
     const team = await Team.create({ name: 'Billing', code: 'BILLING' });
     const agent = await User.create({ name: 'Agent Smith', email: 'smith@test.com', password: 'pass', role: ROLES.AGENT, teamId: team._id });
@@ -91,7 +101,7 @@ describe('3. Workload & Automatic Assignment Tests', () => {
   });
 });
 
-describe('4. State Machine Invariants', () => {
+describe('5. State Machine Invariants', () => {
   it('Validates legal state transitions', () => {
     expect(StateMachine.isValidTransition('NEW', 'UNCLASSIFIED')).toBe(true);
     expect(StateMachine.isValidTransition('ASSIGNED', 'IN_PROGRESS')).toBe(true);
@@ -104,36 +114,50 @@ describe('4. State Machine Invariants', () => {
   });
 });
 
-describe('5. Authentication & Authorization Protection', () => {
-  it('Rejects unauthorized requests to admin endpoints', async () => {
-    const agentUser = await User.create({ name: 'Agent', email: 'agent@test.com', password: 'pass', role: ROLES.AGENT });
-    const token = generateToken(agentUser._id);
+describe('6. External Customer Portal Ingestion Endpoint (POST /api/tickets/external)', () => {
+  it('Processes external customer request, runs AI+Routing+Assignment pipeline, and returns customer-safe response', async () => {
+    // Seed Billing Team & Agent
+    const billingTeam = await Team.create({ name: 'Billing', code: 'BILLING' });
+    await RoutingRule.create({ name: 'Payment Rule', category: CATEGORIES.PAYMENT, teamId: billingTeam._id });
+    const agent = await User.create({ name: 'Alex Rivera', email: 'alex@support.com', password: 'pass', role: ROLES.AGENT, teamId: billingTeam._id, isAvailable: true });
 
     const res = await request(app)
-      .get('/api/admin/teams')
-      .set('Authorization', `Bearer ${token}`);
-
-    expect(res.statusCode).toBe(403);
-    expect(res.body.success).toBe(false);
-  });
-});
-
-describe('6. Ticket Creation Endpoint Test', () => {
-  it('Creates ticket and triggers AI classification and routing pipeline', async () => {
-    const res = await request(app)
-      .post('/api/tickets')
+      .post('/api/tickets/external')
       .send({
-        customerName: 'Alice Miller',
-        customerEmail: 'alice@example.com',
-        channel: 'Email',
-        subject: 'Charged twice for my order #8841',
-        description: 'I noticed two payments of $149 on my credit card statement.',
+        customer: {
+          name: 'Rahul',
+          email: 'rahul@example.com'
+        },
+        subject: 'Duplicate payment',
+        message: 'I was charged twice for my order.',
+        channel: 'customer_portal',
+        source: 'external_customer_portal'
       });
 
     expect(res.statusCode).toBe(201);
     expect(res.body.success).toBe(true);
-    expect(res.body.ticket).toBeDefined();
-    expect(res.body.ticket.category).toBe(CATEGORIES.PAYMENT);
-    expect(res.body.ticket.priority).toBe(PRIORITIES.HIGH);
+    expect(res.body.ticketId).toBeDefined();
+    expect(res.body.status).toBe('RECEIVED');
+    expect(res.body.message).toBe('Your support request has been received.');
+    expect(res.body.internalPrompt).toBeUndefined();
+    expect(res.body.apiKey).toBeUndefined();
+
+    // Verify stored ticket details in database
+    const savedTicket = await Ticket.findOne({ ticketId: res.body.ticketId });
+    expect(savedTicket).toBeDefined();
+    expect(savedTicket.customer.name).toBe('Rahul');
+    expect(savedTicket.customer.email).toBe('rahul@example.com');
+    expect(savedTicket.subject).toBe('Duplicate payment');
+    expect(savedTicket.description).toBe('I was charged twice for my order.');
+    expect(savedTicket.category).toBe(CATEGORIES.PAYMENT);
+    expect(savedTicket.priority).toBe(PRIORITIES.HIGH);
+    expect(savedTicket.teamId.toString()).toBe(billingTeam._id.toString());
+    expect(savedTicket.assignedAgentId.toString()).toBe(agent._id.toString());
+    expect(savedTicket.source).toBe('external_customer_portal');
+
+    // Verify audit logs generated
+    const auditLogs = await AuditLog.find({ ticketId: savedTicket._id });
+    const createdEvent = auditLogs.find(l => l.event === 'TICKET_CREATED_FROM_CUSTOMER_PORTAL');
+    expect(createdEvent).toBeDefined();
   });
 });

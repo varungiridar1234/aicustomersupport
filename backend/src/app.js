@@ -11,9 +11,24 @@ const auditRoutes = require('./routes/auditRoutes');
 
 const app = express();
 
-// Middlewares
-app.use(cors());
+// Configure CORS for external customer portal & Render deployment
+const allowedOrigin = process.env.ALLOWED_ORIGIN;
+app.use(cors({
+  origin: allowedOrigin ? allowedOrigin.split(',').map(o => o.trim()) : '*',
+  methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-demo-user-id'],
+}));
+
 app.use(express.json());
+
+// Public Health Check Endpoints (GET /health and GET /api/health)
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', service: 'Shubya AI Customer Support Platform' });
+});
+
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'ok', service: 'Shubya AI Customer Support Platform' });
+});
 
 // API Routes
 app.use('/api/auth', authRoutes);
@@ -22,11 +37,6 @@ app.use('/api', aiRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/knowledge', knowledgeRoutes);
 app.use('/api', auditRoutes);
-
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'OK', message: 'ResolvAI backend API operating normally' });
-});
 
 // Centralized error handler
 app.use(errorHandler);
