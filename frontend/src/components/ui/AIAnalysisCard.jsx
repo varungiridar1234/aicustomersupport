@@ -1,51 +1,60 @@
 import React from 'react';
-import { Sparkles, Tag, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { Cpu, Tag, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import PriorityBadge from './PriorityBadge';
 
 export default function AIAnalysisCard({ category, priority, confidence, reason }) {
   const confidencePercent = Math.round((confidence || 0) * 100);
 
   return (
-    <div className="bg-white border border-purple-100 rounded-xl shadow-sm overflow-hidden">
-      <div className="px-5 py-3.5 bg-gradient-to-r from-purple-50 to-indigo-50/50 border-b border-purple-100 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <div className="p-1.5 rounded-md bg-purple-600 text-white shadow-sm">
-            <Sparkles className="w-4 h-4" />
+    <div className="industrial-card corner-screws p-5 space-y-4 relative overflow-hidden">
+      {/* Header Bar */}
+      <div className="flex items-center justify-between pb-3 border-b border-industrial-shadow/40">
+        <div className="flex items-center space-x-2 pl-4">
+          <div className="w-7 h-7 rounded-lg bg-industrial-recessed shadow-recessed flex items-center justify-center text-industrial-orange">
+            <Cpu className="w-4 h-4" />
           </div>
-          <h3 className="text-sm font-bold text-slate-900">
-            AI Intelligent Classification
-          </h3>
+          <div>
+            <h3 className="text-xs font-bold text-industrial-dark uppercase tracking-wider font-mono">
+              AI INTELLIGENT CLASSIFICATION
+            </h3>
+            <span className="text-[10px] text-industrial-label font-mono">MODULE #AI-CLASSIFY</span>
+          </div>
         </div>
-        <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-purple-100 text-purple-700 border border-purple-200">
-          {confidencePercent}% Confidence
-        </span>
+
+        <div className="flex items-center space-x-2 pr-4">
+          <span className="w-2 h-2 rounded-full led-indicator-active" />
+          <span className="text-xs font-mono font-bold px-2.5 py-1 rounded bg-industrial-recessed shadow-recessed text-industrial-dark">
+            {confidencePercent}% CONFIDENCE
+          </span>
+        </div>
       </div>
 
-      <div className="p-5 space-y-4 text-xs">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-            <span className="text-slate-500 block text-[11px] font-medium mb-1">Predicted Category</span>
-            <span className="font-bold text-slate-900 text-sm flex items-center gap-1.5">
-              <Tag className="w-3.5 h-3.5 text-purple-600" />
-              {category || 'Unassigned'}
-            </span>
+      {/* Recessed Gauge Grid */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="industrial-well p-3.5 space-y-1">
+          <span className="industrial-label text-[10px] block">PREDICTED CATEGORY</span>
+          <div className="font-bold text-industrial-dark text-sm flex items-center gap-1.5 font-mono">
+            <Tag className="w-3.5 h-3.5 text-industrial-orange" />
+            <span>{category || 'UNASSIGNED'}</span>
           </div>
+        </div>
 
-          <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-            <span className="text-slate-500 block text-[11px] font-medium mb-1 font-sans">Predicted Priority</span>
+        <div className="industrial-well p-3.5 space-y-1">
+          <span className="industrial-label text-[10px] block font-mono">PREDICTED PRIORITY</span>
+          <div className="pt-0.5">
             <PriorityBadge priority={priority} />
           </div>
         </div>
-
-        {reason && (
-          <div className="pt-2">
-            <span className="text-slate-500 block text-[11px] font-medium mb-1">Classification Rationale</span>
-            <p className="text-slate-700 bg-slate-50 p-3 rounded-lg border border-slate-100 leading-relaxed">
-              {reason}
-            </p>
-          </div>
-        )}
       </div>
+
+      {reason && (
+        <div className="space-y-1.5">
+          <span className="industrial-label text-[10px] block">CLASSIFICATION RATIONALE</span>
+          <div className="industrial-well p-3.5 text-xs text-industrial-dark font-sans leading-relaxed">
+            {reason}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

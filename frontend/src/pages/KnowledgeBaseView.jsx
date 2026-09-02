@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, Search, Plus, FileText, CheckCircle, Database } from 'lucide-react';
+import { BookOpen, Search, Plus, FileText, Database } from 'lucide-react';
 import api from '../services/api';
 
 export default function KnowledgeBaseView() {
@@ -59,82 +59,82 @@ export default function KnowledgeBaseView() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-slate-200">
+    <div className="space-y-6 font-sans">
+      {/* Header Bar */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-3 border-b border-industrial-shadow/40">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-purple-600" />
-            Support<span className="text-purple-600">IQ</span> Knowledge Intelligence (RAG Grounding)
+          <h1 className="text-xl font-bold text-industrial-dark tracking-tight font-mono uppercase flex items-center gap-2">
+            <BookOpen className="w-5 h-5 text-industrial-orange" />
+            SUPPORT<span className="text-industrial-orange">IQ</span> KNOWLEDGE INTELLIGENCE (RAG INDEX)
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Grounded policy documents indexed for vector similarity search and Gemini resolution reasoning
+          <p className="text-xs font-mono text-industrial-label mt-0.5">
+            GROUNDED POLICY DOCUMENTS INDEXED FOR VECTOR SIMILARITY SEARCH & GEMINI REASONING
           </p>
         </div>
 
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs rounded-lg shadow-sm transition-colors"
+          className="industrial-btn-primary px-4 py-2 text-xs font-mono flex items-center gap-2 shrink-0"
         >
           <Plus className="w-4 h-4" />
-          <span>Upload Policy Document</span>
+          <span>UPLOAD POLICY DOCUMENT</span>
         </button>
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="industrial-card corner-screws p-4 flex flex-col md:flex-row items-center justify-between gap-4 font-mono text-xs">
         <div className="relative w-full md:w-96">
-          <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+          <Search className="w-4 h-4 absolute left-3.5 top-3 text-industrial-label" />
           <input
             type="text"
             placeholder="Search policy titles, content, or tags..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-4 py-2 text-xs text-slate-900 focus:outline-none focus:border-purple-600 font-medium"
+            className="w-full industrial-well pl-10 pr-4 py-2 text-xs text-industrial-dark placeholder-industrial-label focus:outline-none font-mono"
           />
         </div>
 
         <select
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
-          className="bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 rounded-lg px-3 py-2 focus:outline-none focus:border-purple-600"
+          className="industrial-well px-3 py-2 text-xs font-mono font-bold text-industrial-dark focus:outline-none"
         >
-          <option value="">All Categories</option>
-          <option value="Payment">Payment</option>
-          <option value="Technical">Technical</option>
-          <option value="Delivery">Delivery</option>
-          <option value="Account">Account</option>
-          <option value="Security">Security</option>
+          <option value="">ALL CATEGORIES</option>
+          <option value="Payment">PAYMENT</option>
+          <option value="Technical">TECHNICAL</option>
+          <option value="Delivery">DELIVERY</option>
+          <option value="Account">ACCOUNT</option>
+          <option value="Security">SECURITY</option>
         </select>
       </div>
 
       {/* Document Grid */}
       {loading ? (
-        <div className="py-16 text-center text-xs text-slate-500">Loading vector index...</div>
+        <div className="py-16 text-center text-xs font-mono text-industrial-label">LOADING VECTOR INDEX...</div>
       ) : documents.length === 0 ? (
-        <div className="py-16 text-center text-slate-500">No policy documents found.</div>
+        <div className="py-16 text-center text-xs font-mono text-industrial-label">NO POLICY DOCUMENTS FOUND IN INDEX.</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {documents.map((doc) => (
-            <div key={doc._id} className="bg-white p-5 rounded-xl border border-slate-200 border-l-4 border-l-purple-600 shadow-sm space-y-3 hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between">
+            <div key={doc._id} className="industrial-card corner-screws p-5 space-y-3 border-l-4 border-l-industrial-orange">
+              <div className="flex items-center justify-between pl-4">
                 <div className="flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-purple-600" />
-                  <h3 className="font-bold text-slate-900 text-sm">{doc.title}</h3>
+                  <FileText className="w-4 h-4 text-industrial-orange" />
+                  <h3 className="font-bold text-industrial-dark text-sm font-mono">{doc.title}</h3>
                 </div>
-                <span className="px-2.5 py-0.5 rounded bg-purple-50 border border-purple-200 text-purple-700 text-[10px] font-bold uppercase">
+                <span className="px-2.5 py-0.5 rounded bg-industrial-recessed text-industrial-dark font-mono text-[10px] font-bold uppercase pr-4">
                   {doc.category}
                 </span>
               </div>
 
-              <p className="text-xs text-slate-700 leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-100 font-mono text-[11px] whitespace-pre-wrap">
+              <p className="industrial-well p-3.5 text-xs text-industrial-dark leading-relaxed font-sans whitespace-pre-wrap">
                 {doc.content}
               </p>
 
               {doc.tags && doc.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 pt-1">
+                <div className="flex flex-wrap gap-1.5 pt-1 font-mono">
                   {doc.tags.map((tag, i) => (
-                    <span key={i} className="px-2 py-0.5 bg-slate-100 text-slate-600 text-[10px] font-medium rounded border border-slate-200">
+                    <span key={i} className="px-2 py-0.5 bg-industrial-recessed text-industrial-dark text-[10px] font-bold rounded">
                       #{tag}
                     </span>
                   ))}
@@ -145,31 +145,33 @@ export default function KnowledgeBaseView() {
         </div>
       )}
 
-      {/* Modal */}
+      {/* Upload Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
-          <div className="bg-white border border-slate-200 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
-            <h3 className="text-base font-bold text-slate-900">Upload Policy Document for RAG Vector Indexing</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+          <div className="industrial-card corner-screws max-w-lg w-full p-6 shadow-floating space-y-4">
+            <h3 className="text-base font-bold text-industrial-dark font-mono uppercase pl-4">
+              UPLOAD POLICY DOCUMENT FOR VECTOR INDEXING
+            </h3>
 
-            <form onSubmit={handleUpload} className="space-y-4 text-xs">
+            <form onSubmit={handleUpload} className="space-y-4 text-xs font-mono">
               <div>
-                <label className="text-slate-700 font-semibold block mb-1">Document Title</label>
+                <label className="text-industrial-dark font-bold block mb-1">DOCUMENT TITLE</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Chargeback & Fraud SLA"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-900 font-medium focus:outline-none focus:border-purple-600"
+                  className="w-full industrial-well p-2.5 text-industrial-dark font-mono focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="text-slate-700 font-semibold block mb-1">Category</label>
+                <label className="text-industrial-dark font-bold block mb-1">CATEGORY</label>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-900 font-medium focus:outline-none focus:border-purple-600"
+                  className="w-full industrial-well p-2.5 text-industrial-dark font-mono focus:outline-none"
                 >
                   <option value="Payment">Payment</option>
                   <option value="Technical">Technical</option>
@@ -180,25 +182,25 @@ export default function KnowledgeBaseView() {
               </div>
 
               <div>
-                <label className="text-slate-700 font-semibold block mb-1">Full Document SOP Content</label>
+                <label className="text-industrial-dark font-bold block mb-1">FULL DOCUMENT SOP CONTENT</label>
                 <textarea
                   required
                   rows={5}
                   placeholder="Write full company policy instructions..."
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-900 font-mono text-xs focus:outline-none focus:border-purple-600"
+                  className="w-full industrial-well p-2.5 text-industrial-dark font-sans text-xs focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="text-slate-700 font-semibold block mb-1">Comma-separated Tags</label>
+                <label className="text-industrial-dark font-bold block mb-1">TAGS (COMMA SEPARATED)</label>
                 <input
                   type="text"
                   placeholder="e.g. payment, refund, double charge"
                   value={tags}
                   onChange={(e) => setTags(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-900 font-medium focus:outline-none focus:border-purple-600"
+                  className="w-full industrial-well p-2.5 text-industrial-dark font-mono focus:outline-none"
                 />
               </div>
 
@@ -206,15 +208,15 @@ export default function KnowledgeBaseView() {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold rounded-lg"
+                  className="industrial-btn-secondary px-4 py-2 text-xs font-mono"
                 >
-                  Cancel
+                  CANCEL
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-sm"
+                  className="industrial-btn-primary px-4 py-2 text-xs font-mono"
                 >
-                  Index & Save Policy
+                  INDEX & SAVE POLICY
                 </button>
               </div>
             </form>

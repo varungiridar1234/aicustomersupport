@@ -4,37 +4,152 @@
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-900 font-sans antialiased selection:bg-purple-600 selection:text-white;
+    @apply bg-industrial-chassis text-industrial-dark font-sans antialiased selection:bg-industrial-orange selection:text-white;
   }
 }
 
 /* Custom scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #d1d9e6;
+  box-shadow: inset 2px 2px 4px #babecc, inset -2px -2px 4px #ffffff;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #babecc;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #a3b1c6;
 }
 
-/* SupportIQ Card Panel Utility */
-.glass-panel, .support-card {
-  @apply bg-white border border-slate-200/90 rounded-xl shadow-sm hover:shadow-md transition-shadow;
+/* Industrial Realism Tactile Utility Classes */
+
+/* Level 0 Chassis Container */
+.industrial-chassis {
+  background-color: #e0e5ec;
 }
 
-/* Subtle pulse animations */
-@keyframes pulse-subtle {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+/* Level +1 Raised Panel / Card */
+.glass-panel, .support-card, .industrial-card {
+  background-color: #e0e5ec;
+  border-radius: 16px;
+  box-shadow: 8px 8px 16px #babecc, -8px -8px 16px #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  transition: all 300ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.animate-pulse-subtle {
-  animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+.industrial-card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 12px 12px 24px #babecc, -12px -12px 24px #ffffff, inset 1px 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+/* Level -1 Recessed Input / Well */
+.industrial-well, .industrial-recessed {
+  background-color: #e0e5ec;
+  border-radius: 8px;
+  box-shadow: inset 4px 4px 8px #babecc, inset -4px -4px 8px #ffffff;
+  border: none;
+}
+
+/* Primary Button (Safety Orange Physical Key) */
+.industrial-btn-primary {
+  background-color: #ff4757;
+  color: #ffffff;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 8px;
+  box-shadow: 4px 4px 8px rgba(166, 50, 60, 0.4), -4px -4px 8px rgba(255, 100, 110, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 150ms ease-in-out;
+}
+.industrial-btn-primary:hover {
+  filter: brightness(1.05);
+}
+.industrial-btn-primary:active {
+  transform: translateY(2px);
+  box-shadow: inset 3px 3px 6px rgba(166, 50, 60, 0.6), inset -3px -3px 6px rgba(255, 100, 110, 0.4);
+}
+
+/* Secondary Button (Chassis Key) */
+.industrial-btn-secondary {
+  background-color: #e0e5ec;
+  color: #2d3436;
+  font-weight: 700;
+  border-radius: 8px;
+  box-shadow: 4px 4px 8px #babecc, -4px -4px 8px #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  transition: all 150ms ease-in-out;
+}
+.industrial-btn-secondary:hover {
+  color: #ff4757;
+}
+.industrial-btn-secondary:active {
+  transform: translateY(2px);
+  box-shadow: inset 4px 4px 8px #babecc, inset -4px -4px 8px #ffffff;
+}
+
+/* Manufacturing Detail: Corner Screws */
+.corner-screws {
+  position: relative;
+}
+.corner-screws::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 2px 2px, rgba(0,0,0,0.2) 1px, transparent 2px);
+  box-shadow: inset 1px 1px 1px rgba(0,0,0,0.3);
+  pointer-events: none;
+}
+.corner-screws::after {
+  content: '';
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 2px 2px, rgba(0,0,0,0.2) 1px, transparent 2px);
+  box-shadow: inset 1px 1px 1px rgba(0,0,0,0.3);
+  pointer-events: none;
+}
+
+/* Manufacturing Detail: Vent Slots */
+.vent-slots {
+  display: flex;
+  gap: 3px;
+}
+.vent-slot {
+  height: 18px;
+  width: 3px;
+  border-radius: 9999px;
+  background-color: #d1d9e6;
+  box-shadow: inset 1px 1px 2px rgba(0,0,0,0.2);
+}
+
+/* LED Indicator Glow */
+.led-indicator-active {
+  background-color: #ff4757;
+  box-shadow: 0 0 10px 2px rgba(255, 71, 87, 0.6);
+}
+
+.led-indicator-green {
+  background-color: #22c55e;
+  box-shadow: 0 0 10px 2px rgba(34, 197, 94, 0.6);
+}
+
+/* Technical Stamped Label */
+.industrial-label {
+  font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  color: #4a5568;
 }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell, X, Check, Ticket, AlertTriangle } from 'lucide-react';
+import { Bell, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function NotificationPanel({ isOpen, onClose, notifications = [], onMarkRead }) {
@@ -8,20 +8,21 @@ export default function NotificationPanel({ isOpen, onClose, notifications = [],
   if (!isOpen) return null;
 
   return (
-    <div className="fixed top-16 right-4 z-50 w-96 bg-white border border-slate-200 shadow-xl rounded-xl p-4 animate-fadeIn">
-      <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
-        <div className="flex items-center gap-2">
-          <Bell className="w-4 h-4 text-purple-600" />
-          <h3 className="text-sm font-bold text-slate-900">Real-Time Alerts</h3>
+    <div className="fixed top-16 right-4 z-50 w-96 industrial-card corner-screws p-4 animate-fadeIn shadow-floating">
+      <div className="flex items-center justify-between pb-3 mb-3 border-b border-industrial-shadow/40">
+        <div className="flex items-center gap-2 pl-4">
+          <span className="w-2 h-2 rounded-full led-indicator-active animate-pulse" />
+          <Bell className="w-4 h-4 text-industrial-orange" />
+          <h3 className="text-xs font-bold text-industrial-dark uppercase font-mono">REAL-TIME ALERTS</h3>
         </div>
-        <button onClick={onClose} className="p-1 rounded text-slate-400 hover:text-slate-600">
+        <button onClick={onClose} className="p-1 rounded text-industrial-label hover:text-industrial-dark pr-4">
           <X className="w-4 h-4" />
         </button>
       </div>
 
       {notifications.length === 0 ? (
-        <div className="py-8 text-center text-xs text-slate-500">
-          No new alerts. Real-time updates will appear here automatically via Socket.IO.
+        <div className="industrial-well p-6 text-center text-xs font-mono text-industrial-label">
+          NO NEW ALERTS. LIVE UPDATES WILL APPEAR VIA SOCKET.IO.
         </div>
       ) : (
         <div className="space-y-2.5 max-h-96 overflow-y-auto">
@@ -32,13 +33,13 @@ export default function NotificationPanel({ isOpen, onClose, notifications = [],
                 if (n.ticketId) navigate(`/tickets/${n.ticketId}`);
                 onClose();
               }}
-              className="bg-slate-50 hover:bg-purple-50/50 p-3 rounded-lg border border-slate-200/80 hover:border-purple-300 cursor-pointer transition-all"
+              className="industrial-well p-3 hover:brightness-105 cursor-pointer transition-all"
             >
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-bold text-slate-900">{n.title}</span>
-                <span className="text-[10px] text-slate-400">Just now</span>
+                <span className="text-xs font-bold font-mono text-industrial-dark">{n.title}</span>
+                <span className="text-[10px] font-mono text-industrial-label">JUST NOW</span>
               </div>
-              <p className="text-xs text-slate-600 mb-1">{n.message}</p>
+              <p className="text-xs text-industrial-dark font-sans mb-1">{n.message}</p>
             </div>
           ))}
         </div>

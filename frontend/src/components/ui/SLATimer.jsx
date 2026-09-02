@@ -7,7 +7,7 @@ export default function SLATimer({ slaDeadline, priority, status }) {
 
   useEffect(() => {
     if (!slaDeadline) {
-      setTimeLeft('No SLA set');
+      setTimeLeft('NO SLA SET');
       return;
     }
 
@@ -18,7 +18,7 @@ export default function SLATimer({ slaDeadline, priority, status }) {
 
       if (['RESOLVED', 'CLOSED'].includes(status)) {
         setSlaState('ON_TRACK');
-        setTimeLeft('SLA Completed');
+        setTimeLeft('SLA COMPLETED');
         return;
       }
 
@@ -26,7 +26,7 @@ export default function SLATimer({ slaDeadline, priority, status }) {
         setSlaState('BREACHED');
         const overMs = Math.abs(diffMs);
         const overMins = Math.floor(overMs / 60000);
-        setTimeLeft(`Breached by ${overMins}m`);
+        setTimeLeft(`BREACHED +${overMins}m`);
         return;
       }
 
@@ -42,9 +42,9 @@ export default function SLATimer({ slaDeadline, priority, status }) {
       const secs = Math.floor((diffMs % 60000) / 1000);
 
       if (hours > 0) {
-        setTimeLeft(`${hours}h ${mins}m ${secs}s remaining`);
+        setTimeLeft(`${hours}h ${mins}m ${secs}s REMAINING`);
       } else {
-        setTimeLeft(`${mins}m ${secs}s remaining`);
+        setTimeLeft(`${mins}m ${secs}s REMAINING`);
       }
     };
 
@@ -55,34 +55,35 @@ export default function SLATimer({ slaDeadline, priority, status }) {
 
   if (['RESOLVED', 'CLOSED'].includes(status)) {
     return (
-      <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-medium">
-        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-        <span>SLA Fulfilled</span>
+      <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-[#dcfce7] border border-[#bbf7d0] text-[#166534] font-mono text-xs font-bold shadow-xs">
+        <span className="w-2 h-2 rounded-full led-indicator-green" />
+        <CheckCircle2 className="w-3.5 h-3.5" />
+        <span>SLA FULFILLED</span>
       </div>
     );
   }
 
   if (slaState === 'BREACHED') {
     return (
-      <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs font-semibold">
-        <AlertOctagon className="w-4 h-4 text-red-600" />
-        <span>SLA BREACHED ({timeLeft})</span>
+      <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-industrial-orange text-white font-mono text-xs font-bold shadow-[0_0_10px_rgba(255,71,87,0.5)] animate-pulse">
+        <AlertOctagon className="w-3.5 h-3.5" />
+        <span>{timeLeft}</span>
       </div>
     );
   }
 
   if (slaState === 'AT_RISK') {
     return (
-      <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold">
-        <AlertTriangle className="w-4 h-4 text-amber-600" />
+      <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-[#fef3c7] border border-[#fde68a] text-[#92400e] font-mono text-xs font-bold shadow-xs animate-pulse-subtle">
+        <AlertTriangle className="w-3.5 h-3.5 text-[#d97706]" />
         <span>SLA AT RISK ({timeLeft})</span>
       </div>
     );
   }
 
   return (
-    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-200 text-slate-700 text-xs font-medium">
-      <Clock className="w-4 h-4 text-purple-600" />
+    <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-industrial-recessed shadow-recessed text-industrial-dark font-mono text-xs font-bold border-none">
+      <Clock className="w-3.5 h-3.5 text-industrial-orange" />
       <span>SLA {timeLeft}</span>
     </div>
   );

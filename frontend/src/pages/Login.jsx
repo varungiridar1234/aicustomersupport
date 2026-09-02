@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Shield, User, Lock, ArrowRight, Building2 } from 'lucide-react';
+import { Cpu, Shield, User, Lock, ArrowRight, Building2 } from 'lucide-react';
 import api from '../services/api';
 
 export default function Login() {
@@ -22,7 +22,7 @@ export default function Login() {
         navigate('/dashboard');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Authentication failed. Please check your credentials.');
+      setError(err.response?.data?.message || 'AUTHENTICATION FAILED. CHECK SYSTEM CREDENTIALS.');
     } finally {
       setLoading(false);
     }
@@ -37,58 +37,69 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white border border-slate-200 rounded-2xl shadow-xl p-8 space-y-6">
+    <div className="min-h-screen bg-industrial-chassis flex flex-col items-center justify-center p-4">
+      <div className="max-w-md w-full industrial-card corner-screws p-8 space-y-6 shadow-floating">
         
-        {/* Header & Brand */}
-        <div className="text-center space-y-2">
-          <div className="inline-flex p-3 rounded-xl bg-purple-600 shadow-sm text-white mb-1">
-            <Sparkles className="w-6 h-6" />
+        {/* Top Header & Machine Label */}
+        <div className="text-center space-y-3">
+          <div className="inline-flex w-12 h-12 rounded-xl bg-industrial-orange text-white shadow-orange-btn items-center justify-center mb-1">
+            <Cpu className="w-6 h-6 text-white" />
           </div>
           
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-            Support<span className="text-purple-600">IQ</span>
+          <h1 className="text-2xl font-black text-industrial-dark tracking-tight font-mono uppercase">
+            SUPPORT<span className="text-industrial-orange">IQ</span>
           </h1>
           
-          <p className="text-xs font-medium text-slate-500">
-            Enterprise AI Customer Support Resolution Platform
+          <p className="text-xs font-mono font-bold text-industrial-label tracking-wider uppercase">
+            INDUSTRIAL AI RESOLUTION CONSOLE
           </p>
+
+          <div className="flex justify-center vent-slots pt-1">
+            <div className="vent-slot" />
+            <div className="vent-slot" />
+            <div className="vent-slot" />
+            <div className="vent-slot" />
+          </div>
         </div>
 
         {error && (
-          <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-xs text-red-700 font-medium text-center">
+          <div className="industrial-well p-3 text-xs font-mono font-bold text-industrial-orange text-center border border-industrial-orange/40">
             {error}
           </div>
         )}
 
-        {/* Login Form */}
-        <form onSubmit={handleLogin} className="space-y-4 text-xs">
+        {/* Recessed Login Form */}
+        <form onSubmit={handleLogin} className="space-y-4 text-xs font-mono">
           <div>
-            <label className="text-slate-700 font-semibold block mb-1.5">Department Email / User ID</label>
+            <label className="text-industrial-dark font-bold block mb-1.5 uppercase">
+              DEPARTMENT USER ID / EMAIL
+            </label>
             <div className="relative">
-              <User className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+              <User className="w-4 h-4 text-industrial-label absolute left-3.5 top-3" />
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="e.g. billing.agent@support.com"
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-3 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-purple-600 font-medium"
+                className="w-full industrial-well pl-10 pr-4 py-2.5 text-industrial-dark placeholder-industrial-label focus:outline-none font-mono text-xs"
               />
             </div>
           </div>
 
           <div>
-            <label className="text-slate-700 font-semibold block mb-1.5">Security Password</label>
+            <label className="text-industrial-dark font-bold block mb-1.5 uppercase">
+              SECURITY KEY CODE
+            </label>
             <div className="relative">
-              <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+              <Lock className="w-4 h-4 text-industrial-label absolute left-3.5 top-3" />
               <input
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••••••"
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-3 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-purple-600 font-medium"
+                className="w-full industrial-well pl-10 pr-4 py-2.5 text-industrial-dark placeholder-industrial-label focus:outline-none font-mono text-xs"
               />
             </div>
           </div>
@@ -96,68 +107,68 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs rounded-lg shadow-sm flex items-center justify-center gap-2 transition-colors"
+            className="w-full py-3 industrial-btn-primary text-xs font-mono flex items-center justify-center gap-2"
           >
-            <span>{loading ? 'Authenticating...' : 'Sign In to SupportIQ Console'}</span>
+            <span>{loading ? 'AUTHENTICATING...' : 'INITIALIZE SYSTEM SESSION'}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
 
-        {/* Quick Demo Persona Switcher */}
-        <div className="pt-4 border-t border-slate-100 space-y-2.5">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-slate-500 font-semibold uppercase tracking-wider text-[10px]">
-              Demo Persona Quick Switch
+        {/* Tactile Demo Persona Switches */}
+        <div className="pt-4 border-t border-industrial-shadow/40 space-y-3">
+          <div className="flex items-center justify-between text-xs font-mono">
+            <span className="text-industrial-label font-bold uppercase tracking-wider text-[10px]">
+              DEMO PERSONA QUICK SWITCH
             </span>
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-2 font-mono">
             <button
               type="button"
               onClick={() => loginAsDepartment('admin@support.com', 'admin123')}
-              className="p-2.5 bg-slate-50 hover:bg-purple-50 border border-slate-200 hover:border-purple-300 rounded-lg text-left transition-colors"
+              className="industrial-btn-secondary p-2.5 text-left"
             >
-              <div className="flex items-center gap-1.5 text-purple-700 font-bold text-[11px]">
+              <div className="flex items-center gap-1.5 text-industrial-orange font-bold text-[11px]">
                 <Shield className="w-3.5 h-3.5" />
-                <span>System Admin</span>
+                <span>SYSTEM ADMIN</span>
               </div>
-              <div className="text-[10px] text-slate-600 truncate mt-0.5">Sarah Connor</div>
+              <div className="text-[10px] text-industrial-label truncate mt-0.5 font-sans">Sarah Connor</div>
             </button>
 
             <button
               type="button"
               onClick={() => loginAsDepartment('billing.agent@support.com', 'billing123')}
-              className="p-2.5 bg-slate-50 hover:bg-purple-50 border border-slate-200 hover:border-purple-300 rounded-lg text-left transition-colors"
+              className="industrial-btn-secondary p-2.5 text-left"
             >
-              <div className="flex items-center gap-1.5 text-purple-700 font-bold text-[11px]">
+              <div className="flex items-center gap-1.5 text-industrial-dark font-bold text-[11px]">
                 <Building2 className="w-3.5 h-3.5" />
-                <span>Billing Lead</span>
+                <span>BILLING LEAD</span>
               </div>
-              <div className="text-[10px] text-slate-600 truncate mt-0.5">Alex Rivera</div>
+              <div className="text-[10px] text-industrial-label truncate mt-0.5 font-sans">Alex Rivera</div>
             </button>
 
             <button
               type="button"
               onClick={() => loginAsDepartment('tech.agent@support.com', 'tech123')}
-              className="p-2.5 bg-slate-50 hover:bg-purple-50 border border-slate-200 hover:border-purple-300 rounded-lg text-left transition-colors"
+              className="industrial-btn-secondary p-2.5 text-left"
             >
-              <div className="flex items-center gap-1.5 text-purple-700 font-bold text-[11px]">
+              <div className="flex items-center gap-1.5 text-industrial-dark font-bold text-[11px]">
                 <Building2 className="w-3.5 h-3.5" />
-                <span>Tech Lead</span>
+                <span>TECH LEAD</span>
               </div>
-              <div className="text-[10px] text-slate-600 truncate mt-0.5">Elena Rostova</div>
+              <div className="text-[10px] text-industrial-label truncate mt-0.5 font-sans">Elena Rostova</div>
             </button>
 
             <button
               type="button"
               onClick={() => loginAsDepartment('logistics.agent@support.com', 'logistics123')}
-              className="p-2.5 bg-slate-50 hover:bg-purple-50 border border-slate-200 hover:border-purple-300 rounded-lg text-left transition-colors"
+              className="industrial-btn-secondary p-2.5 text-left"
             >
-              <div className="flex items-center gap-1.5 text-purple-700 font-bold text-[11px]">
+              <div className="flex items-center gap-1.5 text-industrial-dark font-bold text-[11px]">
                 <Building2 className="w-3.5 h-3.5" />
-                <span>Logistics Lead</span>
+                <span>LOGISTICS LEAD</span>
               </div>
-              <div className="text-[10px] text-slate-600 truncate mt-0.5">Carlos Ruiz</div>
+              <div className="text-[10px] text-industrial-label truncate mt-0.5 font-sans">Carlos Ruiz</div>
             </button>
           </div>
         </div>

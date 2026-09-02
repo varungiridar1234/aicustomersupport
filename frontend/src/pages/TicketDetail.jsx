@@ -77,11 +77,11 @@ export default function TicketDetail() {
       setActionLoading(true);
       const res = await api.post(`/tickets/${id}/approve`, { editedResponse: replyText });
       if (res.data.success) {
-        setMessage({ type: 'success', text: 'Outgoing message successfully dispatched to Customer Portal thread!' });
+        setMessage({ type: 'success', text: 'OUTGOING MESSAGE DISPATCHED TO CUSTOMER PORTAL!' });
         await fetchTicketDetails();
       }
     } catch (err) {
-      setMessage({ type: 'error', text: err.response?.data?.message || 'Error dispatching message to Portal' });
+      setMessage({ type: 'error', text: err.response?.data?.message || 'Error dispatching message' });
     } finally {
       setActionLoading(false);
     }
@@ -106,7 +106,7 @@ export default function TicketDetail() {
     if (!ticket.isDraftApproved && !ticket.approvedResponse) {
       setMessage({
         type: 'error',
-        text: 'Workflow Rule: You must review, edit, and approve the customer response draft before marking the ticket as RESOLVED.',
+        text: 'WORKFLOW RULE: MUST REVIEW & APPROVE CUSTOMER DRAFT BEFORE MARKING RESOLVED.',
       });
       return;
     }
@@ -129,10 +129,10 @@ export default function TicketDetail() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[600px]">
+      <div className="flex items-center justify-center min-h-[600px] font-mono">
         <div className="text-center space-y-4">
-          <RefreshCw className="w-8 h-8 text-purple-600 animate-spin mx-auto" />
-          <p className="text-slate-500 text-sm">Loading SupportIQ Ticket Workspace...</p>
+          <RefreshCw className="w-8 h-8 text-industrial-orange animate-spin mx-auto" />
+          <p className="text-industrial-label text-xs">LOADING SUPPORTIQ CONSOLE MODULE...</p>
         </div>
       </div>
     );
@@ -140,64 +140,64 @@ export default function TicketDetail() {
 
   if (!ticket) {
     return (
-      <div className="p-8 text-center bg-white border border-slate-200 rounded-xl shadow-sm">
-        <h2 className="text-xl font-bold text-slate-900 mb-2">Ticket Not Found</h2>
-        <p className="text-slate-500 text-xs mb-4">The requested ticket ID does not exist or has been removed.</p>
+      <div className="industrial-card corner-screws p-8 text-center font-mono">
+        <h2 className="text-xl font-bold text-industrial-dark mb-2">TICKET NOT FOUND</h2>
+        <p className="text-industrial-label text-xs mb-4">THE REQUESTED TICKET RECORD DOES NOT EXIST.</p>
         <button
           onClick={() => navigate('/dashboard')}
-          className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-semibold"
+          className="industrial-btn-primary px-4 py-2 text-xs"
         >
-          Return to Dashboard
+          RETURN TO WORKSPACE
         </button>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-sans">
       {/* Top Header & Actions Bar */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-3 border-b border-industrial-shadow/40">
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/dashboard')}
-            className="p-2 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 transition-colors shadow-xs"
+            className="industrial-btn-secondary p-2.5 text-industrial-dark"
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
 
           <div>
-            <div className="flex items-center gap-3 mb-1">
-              <span className="font-mono font-extrabold text-lg text-purple-700">{ticket.ticketId}</span>
+            <div className="flex items-center gap-3 mb-1 font-mono">
+              <span className="font-extrabold text-lg text-industrial-orange">{ticket.ticketId}</span>
               <PriorityBadge priority={ticket.priority} />
               <StatusBadge status={ticket.status} />
             </div>
-            <h1 className="text-xl font-bold text-slate-900">{ticket.subject}</h1>
+            <h1 className="text-xl font-bold text-industrial-dark">{ticket.subject}</h1>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 font-mono">
           <SLATimer slaDeadline={ticket.slaDeadline} priority={ticket.priority} status={ticket.status} />
 
           {ticket.status !== 'RESOLVED' && ticket.status !== 'CLOSED' && (
             <div className="flex items-center gap-2">
               {!ticket.isDraftApproved && (
-                <span className="text-[11px] font-semibold text-amber-800 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-lg flex items-center gap-1.5">
-                  <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                  <span>Step 1: Approve Response Draft First</span>
+                <span className="text-[11px] font-bold text-[#92400e] bg-[#fef3c7] border border-[#fde68a] px-3 py-1.5 rounded flex items-center gap-1.5">
+                  <AlertCircle className="w-3.5 h-3.5 text-[#d97706] shrink-0" />
+                  <span>STEP 1: APPROVE DRAFT FIRST</span>
                 </span>
               )}
 
               <button
                 onClick={handleResolveTicket}
                 disabled={actionLoading || !ticket.isDraftApproved}
-                className={`flex items-center gap-2 px-4 py-2 font-semibold text-xs rounded-lg shadow-sm transition-all ${
+                className={`flex items-center gap-2 px-4 py-2 font-bold text-xs rounded transition-all ${
                   ticket.isDraftApproved
-                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20'
-                    : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+                    ? 'bg-[#166534] text-white shadow-xs hover:brightness-110'
+                    : 'industrial-btn-secondary opacity-50 cursor-not-allowed'
                 }`}
               >
                 <CheckCircle className="w-4 h-4" />
-                <span>Mark Resolved</span>
+                <span>MARK RESOLVED</span>
               </button>
             </div>
           )}
@@ -206,107 +206,107 @@ export default function TicketDetail() {
 
       {/* Alert Messages */}
       {message && (
-        <div className={`p-4 rounded-xl text-xs font-semibold flex items-center justify-between border ${
-          message.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800'
+        <div className={`industrial-well p-4 text-xs font-mono font-bold flex items-center justify-between border ${
+          message.type === 'success' ? 'bg-[#dcfce7] border-[#bbf7d0] text-[#166534]' : 'bg-industrial-orange/10 border-industrial-orange/30 text-industrial-orange'
         }`}>
           <span>{message.text}</span>
-          <button onClick={() => setMessage(null)} className="p-1 hover:text-slate-900">✕</button>
+          <button onClick={() => setMessage(null)} className="p-1 hover:text-industrial-dark">✕</button>
         </div>
       )}
 
-      {/* 3-Column Enterprise Workspace */}
+      {/* 3-Column Industrial Workspace Console */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* LEFT COLUMN: Customer & Ticket Details (3 Cols) */}
+        {/* LEFT COLUMN: Customer & Assignment Info (3 Cols) */}
         <div className="lg:col-span-3 space-y-5">
-          {/* Customer Profile Card */}
-          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-              <User className="w-4 h-4 text-purple-600" />
-              Customer Details
+          {/* Customer Profile Module */}
+          <div className="industrial-card corner-screws p-5 space-y-4">
+            <h3 className="text-xs font-mono font-bold text-industrial-dark uppercase tracking-wider pl-4 flex items-center gap-2">
+              <User className="w-4 h-4 text-industrial-orange" />
+              CUSTOMER PROFILE
             </h3>
 
-            <div className="space-y-3.5 text-xs">
+            <div className="space-y-3 text-xs">
               <div>
-                <span className="text-slate-400 block text-[11px]">Customer Name</span>
-                <span className="font-bold text-slate-900 text-sm">{ticket.customer?.name}</span>
+                <span className="industrial-label block text-[10px]">CUSTOMER NAME</span>
+                <span className="font-bold text-industrial-dark text-sm font-mono">{ticket.customer?.name}</span>
               </div>
 
-              <div className="flex items-center gap-2 text-slate-700">
-                <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+              <div className="flex items-center gap-2 text-industrial-dark font-mono">
+                <Mail className="w-3.5 h-3.5 text-industrial-label shrink-0" />
                 <span className="truncate">{ticket.customer?.email}</span>
               </div>
 
               {ticket.customer?.phone && (
-                <div className="flex items-center gap-2 text-slate-700">
-                  <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                <div className="flex items-center gap-2 text-industrial-dark font-mono">
+                  <Phone className="w-3.5 h-3.5 text-industrial-label shrink-0" />
                   <span>{ticket.customer?.phone}</span>
                 </div>
               )}
 
-              <div className="pt-3 border-t border-slate-100">
-                <span className="text-slate-400 block text-[11px] mb-1">Originating Channel</span>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-50 border border-slate-200 text-purple-700 font-bold font-mono">
-                  <Radio className="w-3.5 h-3.5 text-purple-600" />
+              <div className="pt-3 border-t border-industrial-shadow/30">
+                <span className="industrial-label block text-[10px] mb-1">ORIGINATING CHANNEL</span>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-industrial-recessed shadow-recessed text-industrial-dark font-bold font-mono text-xs">
+                  <Radio className="w-3.5 h-3.5 text-industrial-orange" />
                   {ticket.channel}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Ticket Metadata & Agent Assignment */}
-          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-              <Building className="w-4 h-4 text-purple-600" />
-              Assignment & Routing
+          {/* Ticket Assignment Module */}
+          <div className="industrial-card corner-screws p-5 space-y-4 font-mono">
+            <h3 className="text-xs font-bold text-industrial-dark uppercase tracking-wider pl-4 flex items-center gap-2">
+              <Building className="w-4 h-4 text-industrial-orange" />
+              ROUTING & AGENT
             </h3>
 
             <div className="space-y-3 text-xs">
               <div>
-                <span className="text-slate-400 block text-[11px]">Assigned Team</span>
-                <span className="font-semibold text-slate-900">{ticket.teamId?.name || 'Unassigned'}</span>
+                <span className="industrial-label block text-[10px]">ASSIGNED TEAM</span>
+                <span className="font-bold text-industrial-dark">{ticket.teamId?.name || 'UNASSIGNED'}</span>
               </div>
 
               <div>
-                <span className="text-slate-400 block text-[11px] mb-1">Assigned Agent</span>
+                <span className="industrial-label block text-[10px] mb-1">ASSIGNED AGENT</span>
                 {ticket.assignedAgentId ? (
-                  <div className="flex items-center gap-2.5 bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                  <div className="industrial-well p-2.5 flex items-center gap-2.5">
                     <img
                       src={ticket.assignedAgentId.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'}
                       alt="Agent Avatar"
-                      className="w-7 h-7 rounded-full object-cover border border-purple-200"
+                      className="w-7 h-7 rounded-full object-cover border border-industrial-shadow"
                     />
                     <div>
-                      <div className="font-bold text-slate-900 text-xs">{ticket.assignedAgentId.name}</div>
-                      <div className="text-[10px] text-slate-500">{ticket.assignedAgentId.email}</div>
+                      <div className="font-bold text-industrial-dark text-xs">{ticket.assignedAgentId.name}</div>
+                      <div className="text-[10px] text-industrial-label font-sans">{ticket.assignedAgentId.email}</div>
                     </div>
                   </div>
                 ) : (
-                  <span className="text-slate-400 italic">No agent assigned</span>
+                  <span className="text-industrial-label italic">UNASSIGNED</span>
                 )}
               </div>
 
               <div>
-                <span className="text-slate-400 block text-[11px]">Created Timestamp</span>
-                <span className="text-slate-700 font-mono text-[11px]">
+                <span className="industrial-label block text-[10px]">CREATED TIMESTAMP</span>
+                <span className="text-industrial-dark font-mono text-[11px]">
                   {new Date(ticket.createdAt).toLocaleString()}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Full Customer Issue Description Card */}
-          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Customer Description</h3>
-            <div className="bg-slate-50 p-3.5 rounded-lg border border-slate-200 text-xs text-slate-700 leading-relaxed font-sans">
+          {/* Issue Description Well */}
+          <div className="industrial-card corner-screws p-5 space-y-3">
+            <h3 className="text-xs font-mono font-bold text-industrial-dark uppercase tracking-wider pl-4">CUSTOMER STATEMENT</h3>
+            <div className="industrial-well p-3.5 text-xs text-industrial-dark leading-relaxed font-sans">
               "{ticket.description}"
             </div>
           </div>
         </div>
 
-        {/* CENTER COLUMN: AI Intelligence & Approval Workflow (6 Cols) */}
+        {/* CENTER COLUMN: AI Intelligence & Response Approval (6 Cols) */}
         <div className="lg:col-span-6 space-y-6">
-          {/* Two-Way Customer Conversation Card */}
+          {/* Two-Way Portal Conversation Terminal */}
           <CustomerConversationCard
             ticket={ticket}
             onSendReply={handleSendPortalReply}
@@ -321,10 +321,10 @@ export default function TicketDetail() {
             reason={ticket.classificationReason}
           />
 
-          {/* AI Step-by-Step Resolution Recommendations */}
+          {/* Recommended SOP Steps Card */}
           <RecommendationCard recommendations={ticket.aiRecommendation} />
 
-          {/* Human-in-the-Loop AI Response Draft Approval */}
+          {/* Human Response Draft Approval Control Panel */}
           <DraftResponseCard
             draftResponse={ticket.draftResponse}
             approvedResponse={ticket.approvedResponse}
@@ -335,12 +335,12 @@ export default function TicketDetail() {
           />
         </div>
 
-        {/* RIGHT COLUMN: RAG Knowledge Grounding & Audit Trail (3 Cols) */}
+        {/* RIGHT COLUMN: RAG Knowledge & Audit Stream (3 Cols) */}
         <div className="lg:col-span-3 space-y-5">
-          {/* Grounded Knowledge Documents Card */}
+          {/* RAG Knowledge Document Grounding Card */}
           <KnowledgeCard retrievedKnowledge={ticket.retrievedKnowledge} />
 
-          {/* Audit & State Machine Event Logs */}
+          {/* Audit Event Trail */}
           <AuditTimeline logs={auditLogs} />
         </div>
       </div>
