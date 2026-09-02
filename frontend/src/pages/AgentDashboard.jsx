@@ -62,7 +62,7 @@ export default function AgentDashboard() {
     // Subscribe to real-time socket events for instant update when external portal tickets arrive
     const socket = getSocket();
     const handleLiveEvent = () => {
-      fetchTickets(true); // Silent background refresh
+      fetchTickets(true); // Instant background refresh
     };
 
     if (socket) {
@@ -72,7 +72,7 @@ export default function AgentDashboard() {
       socket.on('notification', handleLiveEvent);
     }
 
-    const interval = setInterval(() => fetchTickets(true), 5000); // 5s fallback polling
+    const interval = setInterval(() => fetchTickets(true), 3000); // 3s fast fallback polling
 
     return () => {
       if (socket) {
