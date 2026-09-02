@@ -5,18 +5,17 @@ export default function RecommendationCard({ recommendations }) {
   const steps = recommendations || [];
 
   return (
-    <div className="industrial-card corner-screws p-5 space-y-4">
-      {/* Header Bar */}
-      <div className="flex items-center justify-between pb-3 border-b border-industrial-shadow/40">
+    <div className="industrial-card corner-screws p-4 space-y-3">
+      {/* Compact Header Bar */}
+      <div className="flex items-center justify-between pb-2 border-b border-industrial-shadow/40">
         <div className="flex items-center space-x-2 pl-4">
-          <div className="w-7 h-7 rounded-lg bg-industrial-recessed shadow-recessed flex items-center justify-center text-industrial-orange">
-            <ListOrdered className="w-4 h-4" />
+          <div className="w-6 h-6 rounded bg-industrial-recessed shadow-recessed flex items-center justify-center text-industrial-orange">
+            <ListOrdered className="w-3.5 h-3.5" />
           </div>
           <div>
             <h3 className="text-xs font-bold text-industrial-dark uppercase tracking-wider font-mono">
               RECOMMENDED ACTION PLAN
             </h3>
-            <span className="text-[10px] text-industrial-label font-mono">SOP EXECUTION SEQUENCE</span>
           </div>
         </div>
 
@@ -25,28 +24,39 @@ export default function RecommendationCard({ recommendations }) {
         </span>
       </div>
 
-      <div className="space-y-3">
-        {steps.length === 0 ? (
-          <div className="industrial-well p-4 text-center text-xs text-industrial-label italic">
-            No recommendations generated.
-          </div>
-        ) : (
-          steps.map((rec, idx) => (
-            <div
-              key={idx}
-              className="industrial-well p-3.5 flex items-start space-x-3"
-            >
-              <div className="w-6 h-6 rounded bg-industrial-orange text-white font-mono text-xs font-bold flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
-                0{rec.step || idx + 1}
-              </div>
-              <div className="space-y-0.5">
-                <h4 className="text-xs font-bold text-industrial-dark font-mono uppercase">{rec.action}</h4>
-                <p className="text-xs text-industrial-label leading-relaxed font-sans">{rec.detail}</p>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
+      {/* Structured Compact SOP Table */}
+      {steps.length === 0 ? (
+        <div className="industrial-well p-4 text-center text-xs text-industrial-label italic">
+          No recommendations generated.
+        </div>
+      ) : (
+        <div className="industrial-well p-1 overflow-hidden">
+          <table className="w-full text-left border-collapse font-mono text-xs">
+            <thead>
+              <tr className="border-b border-industrial-shadow/40 bg-industrial-recessed text-industrial-dark font-bold uppercase">
+                <th className="py-2 px-3 w-16">STEP</th>
+                <th className="py-2 px-3 w-48">ACTION REQUIRED</th>
+                <th className="py-2 px-3">PROCEDURE DETAILS</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-industrial-shadow/30 text-industrial-dark">
+              {steps.map((rec, idx) => (
+                <tr key={idx} className="hover:bg-industrial-panel transition-colors">
+                  <td className="py-2 px-3 font-bold font-mono text-industrial-orange">
+                    0{rec.step || idx + 1}
+                  </td>
+                  <td className="py-2 px-3 font-bold font-mono text-industrial-dark uppercase">
+                    {rec.action}
+                  </td>
+                  <td className="py-2 px-3 font-sans text-xs text-industrial-label leading-normal">
+                    {rec.detail}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

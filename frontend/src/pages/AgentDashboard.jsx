@@ -87,7 +87,7 @@ export default function AgentDashboard() {
   const resolvedTodayCount = tickets.filter(t => t.status === 'RESOLVED').length;
 
   return (
-    <div className="space-y-6 font-sans">
+    <div className="space-y-5 font-sans">
       {/* Header Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-3 border-b border-industrial-shadow/40">
         <div>
@@ -109,7 +109,7 @@ export default function AgentDashboard() {
         </button>
       </div>
 
-      {/* KPI Mechanical Gauges */}
+      {/* KPI Gauges Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="industrial-card corner-screws p-4 border-l-4 border-l-industrial-orange">
           <div className="flex items-center justify-between">
@@ -119,7 +119,7 @@ export default function AgentDashboard() {
             </div>
           </div>
           <div className="mt-2 font-mono">
-            <span className="text-3xl font-extrabold text-industrial-dark">{openCount}</span>
+            <span className="text-2xl font-extrabold text-industrial-dark">{openCount}</span>
             <span className="text-xs text-industrial-label ml-2">UNRESOLVED</span>
           </div>
         </div>
@@ -132,7 +132,7 @@ export default function AgentDashboard() {
             </div>
           </div>
           <div className="mt-2 font-mono">
-            <span className="text-3xl font-extrabold text-red-600">{criticalCount}</span>
+            <span className="text-2xl font-extrabold text-red-600">{criticalCount}</span>
             <span className="text-xs text-industrial-label ml-2">HIGH PRIORITY</span>
           </div>
         </div>
@@ -145,7 +145,7 @@ export default function AgentDashboard() {
             </div>
           </div>
           <div className="mt-2 font-mono">
-            <span className="text-3xl font-extrabold text-amber-700">{atRiskCount}</span>
+            <span className="text-2xl font-extrabold text-amber-700">{atRiskCount}</span>
             <span className="text-xs text-industrial-label ml-2 font-sans">near breach</span>
           </div>
         </div>
@@ -158,7 +158,7 @@ export default function AgentDashboard() {
             </div>
           </div>
           <div className="mt-2 font-mono">
-            <span className="text-3xl font-extrabold text-emerald-700">{resolvedTodayCount}</span>
+            <span className="text-2xl font-extrabold text-emerald-700">{resolvedTodayCount}</span>
             <span className="text-xs text-industrial-label ml-2">FULFILLED</span>
           </div>
         </div>
@@ -223,7 +223,7 @@ export default function AgentDashboard() {
         </div>
       </div>
 
-      {/* Ticket Table */}
+      {/* Ticket Table with Fixed Header & Internal Scroll Viewport */}
       <div className="industrial-card corner-screws overflow-hidden">
         {initialLoading ? (
           <div className="py-16 text-center text-xs font-mono text-industrial-label flex items-center justify-center gap-2">
@@ -238,10 +238,10 @@ export default function AgentDashboard() {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="max-h-[520px] overflow-y-auto">
             <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-industrial-shadow/40 bg-industrial-recessed text-xs font-mono font-bold text-industrial-dark uppercase tracking-wider">
+              <thead className="sticky top-0 z-10 bg-industrial-recessed shadow-xs">
+                <tr className="border-b border-industrial-shadow/40 text-xs font-mono font-bold text-industrial-dark uppercase tracking-wider">
                   <th className="py-3.5 px-4">TICKET ID</th>
                   <th className="py-3.5 px-4">CUSTOMER & CHANNEL</th>
                   <th className="py-3.5 px-4">ISSUE SUBJECT</th>
@@ -259,11 +259,11 @@ export default function AgentDashboard() {
                     onClick={() => navigate(`/tickets/${ticket._id}`)}
                     className="hover:bg-industrial-panel transition-colors cursor-pointer group"
                   >
-                    <td className="py-3.5 px-4 font-mono font-extrabold text-industrial-orange group-hover:underline">
+                    <td className="py-3 px-4 font-mono font-extrabold text-industrial-orange group-hover:underline">
                       {ticket.ticketId}
                     </td>
 
-                    <td className="py-3.5 px-4">
+                    <td className="py-3 px-4">
                       <div className="font-bold text-industrial-dark">{ticket.customer?.name}</div>
                       <div className="text-[11px] text-industrial-label font-mono flex items-center gap-1.5 mt-0.5">
                         <span>{ticket.customer?.email}</span>
@@ -273,7 +273,7 @@ export default function AgentDashboard() {
                       </div>
                     </td>
 
-                    <td className="py-3.5 px-4 max-w-xs">
+                    <td className="py-3 px-4 max-w-xs">
                       <div className="font-bold text-industrial-dark truncate">
                         {ticket.subject}
                       </div>
@@ -282,29 +282,29 @@ export default function AgentDashboard() {
                       </div>
                     </td>
 
-                    <td className="py-3.5 px-4 font-mono font-semibold text-industrial-dark">
+                    <td className="py-3 px-4 font-mono font-semibold text-industrial-dark">
                       {ticket.category || 'UNCLASSIFIED'}
                     </td>
 
-                    <td className="py-3.5 px-4">
+                    <td className="py-3 px-4">
                       <PriorityBadge priority={ticket.priority} />
                     </td>
 
-                    <td className="py-3.5 px-4">
+                    <td className="py-3 px-4">
                       <StatusBadge status={ticket.status} />
                     </td>
 
-                    <td className="py-3.5 px-4">
+                    <td className="py-3 px-4">
                       <SLATimer slaDeadline={ticket.slaDeadline} priority={ticket.priority} status={ticket.status} />
                     </td>
 
-                    <td className="py-3.5 px-4 text-right">
+                    <td className="py-3 px-4 text-right">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           navigate(`/tickets/${ticket._id}`);
                         }}
-                        className="industrial-btn-secondary px-3 py-1.5 text-xs font-mono inline-flex items-center gap-1 group-hover:text-industrial-orange"
+                        className="industrial-btn-secondary px-3 py-1 text-xs font-mono inline-flex items-center gap-1 group-hover:text-industrial-orange"
                       >
                         <span>VIEW</span>
                         <ChevronRight className="w-3.5 h-3.5" />

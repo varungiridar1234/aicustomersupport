@@ -86,7 +86,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="space-y-6 font-sans">
+    <div className="space-y-5 font-sans">
       {/* Header Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-3 border-b border-industrial-shadow/40">
         <div>
@@ -109,34 +109,34 @@ export default function AdminDashboard() {
       </div>
 
       {/* Industrial Tab Switches */}
-      <div className="flex items-center gap-2 pb-2 overflow-x-auto font-mono text-xs">
+      <div className="flex items-center gap-2 pb-1 overflow-x-auto font-mono text-xs">
         <button
           onClick={() => setActiveTab('teams')}
-          className={`px-4 py-2 flex items-center gap-2 rounded ${
+          className={`px-3.5 py-1.5 flex items-center gap-2 rounded ${
             activeTab === 'teams'
               ? 'industrial-btn-primary'
               : 'industrial-btn-secondary'
           }`}
         >
           <Layers className="w-3.5 h-3.5" />
-          <span>DEPARTMENT TEAMS ({teams.length})</span>
+          <span>TEAMS ({teams.length})</span>
         </button>
 
         <button
           onClick={() => setActiveTab('agents')}
-          className={`px-4 py-2 flex items-center gap-2 rounded ${
+          className={`px-3.5 py-1.5 flex items-center gap-2 rounded ${
             activeTab === 'agents'
               ? 'industrial-btn-primary'
               : 'industrial-btn-secondary'
           }`}
         >
           <Users className="w-3.5 h-3.5" />
-          <span>SUPPORT AGENTS ({agents.length})</span>
+          <span>AGENTS ({agents.length})</span>
         </button>
 
         <button
           onClick={() => setActiveTab('routing')}
-          className={`px-4 py-2 flex items-center gap-2 rounded ${
+          className={`px-3.5 py-1.5 flex items-center gap-2 rounded ${
             activeTab === 'routing'
               ? 'industrial-btn-primary'
               : 'industrial-btn-secondary'
@@ -148,7 +148,7 @@ export default function AdminDashboard() {
 
         <button
           onClick={() => setActiveTab('sla')}
-          className={`px-4 py-2 flex items-center gap-2 rounded ${
+          className={`px-3.5 py-1.5 flex items-center gap-2 rounded ${
             activeTab === 'sla'
               ? 'industrial-btn-primary'
               : 'industrial-btn-secondary'
@@ -161,24 +161,24 @@ export default function AdminDashboard() {
 
       {/* TAB 1: TEAMS MANAGEMENT */}
       {activeTab === 'teams' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-8 industrial-card corner-screws overflow-hidden p-5 space-y-4">
-            <div className="pb-3 border-b border-industrial-shadow/40 font-mono font-bold text-xs text-industrial-dark uppercase tracking-wider pl-4">
-              ACTIVE SUPPORT TEAMS
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <div className="lg:col-span-8 industrial-card corner-screws p-4 space-y-3">
+            <div className="pb-2 border-b border-industrial-shadow/40 font-mono font-bold text-xs text-industrial-dark uppercase tracking-wider pl-4">
+              SUPPORT TEAMS DIRECTORY
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2.5 max-h-[500px] overflow-y-auto">
               {teams.map((team) => (
-                <div key={team._id} className="industrial-well p-4 flex items-center justify-between">
+                <div key={team._id} className="industrial-well p-3 flex items-center justify-between">
                   <div>
                     <div className="flex items-center gap-2 font-mono">
-                      <span className="font-bold text-industrial-dark text-sm">{team.name}</span>
-                      <span className="px-2 py-0.5 rounded bg-industrial-orange text-white font-bold text-xs">
+                      <span className="font-bold text-industrial-dark text-xs">{team.name}</span>
+                      <span className="px-2 py-0.5 rounded bg-industrial-orange text-white font-bold text-[10px]">
                         {team.code}
                       </span>
                     </div>
-                    <p className="text-xs text-industrial-label mt-1 font-sans">{team.description}</p>
+                    <p className="text-[11px] text-industrial-label mt-0.5 font-sans">{team.description}</p>
                   </div>
-                  <span className="text-xs font-mono font-bold text-[#166534] bg-[#dcfce7] border border-[#bbf7d0] px-2.5 py-1 rounded">
+                  <span className="text-[10px] font-mono font-bold text-[#166534] bg-[#dcfce7] border border-[#bbf7d0] px-2 py-0.5 rounded">
                     ACTIVE
                   </span>
                 </div>
@@ -186,7 +186,7 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="lg:col-span-4 industrial-card corner-screws p-5 space-y-4">
+          <div className="lg:col-span-4 industrial-card corner-screws p-4 space-y-3">
             <h3 className="text-xs font-mono font-bold text-industrial-dark uppercase tracking-wider pl-4">
               CREATE SUPPORT TEAM
             </h3>
@@ -218,7 +218,7 @@ export default function AdminDashboard() {
               <div>
                 <label className="text-industrial-label block mb-1 font-bold">DESCRIPTION</label>
                 <textarea
-                  rows={3}
+                  rows={2}
                   value={newTeamDesc}
                   onChange={(e) => setNewTeamDesc(e.target.value)}
                   placeholder="Handles security inquiries and auth escalations"
@@ -228,7 +228,7 @@ export default function AdminDashboard() {
 
               <button
                 type="submit"
-                className="w-full py-2.5 industrial-btn-primary text-xs font-mono flex items-center justify-center gap-1.5"
+                className="w-full py-2 industrial-btn-primary text-xs font-mono flex items-center justify-center gap-1.5"
               >
                 <Plus className="w-4 h-4" />
                 <span>REGISTER TEAM</span>
@@ -240,46 +240,46 @@ export default function AdminDashboard() {
 
       {/* TAB 2: AGENTS DIRECTORY */}
       {activeTab === 'agents' && (
-        <div className="industrial-card corner-screws overflow-hidden p-5 space-y-4">
-          <div className="pb-3 border-b border-industrial-shadow/40 font-mono font-bold text-xs text-industrial-dark uppercase tracking-wider pl-4">
+        <div className="industrial-card corner-screws p-4 space-y-3">
+          <div className="pb-2 border-b border-industrial-shadow/40 font-mono font-bold text-xs text-industrial-dark uppercase tracking-wider pl-4">
             AGENT DIRECTORY & WORKLOAD SCORES
           </div>
-          <div className="overflow-x-auto">
+          <div className="max-h-[500px] overflow-y-auto">
             <table className="w-full text-left border-collapse font-mono">
-              <thead>
-                <tr className="border-b border-industrial-shadow/40 bg-industrial-recessed text-xs font-bold text-industrial-dark uppercase tracking-wider">
-                  <th className="py-3 px-4">AGENT NAME</th>
-                  <th className="py-3 px-4">EMAIL / ID</th>
-                  <th className="py-3 px-4">ASSIGNED TEAM</th>
-                  <th className="py-3 px-4">ROLE</th>
-                  <th className="py-3 px-4">AVAILABILITY</th>
-                  <th className="py-3 px-4 text-right">WORKLOAD SCORE</th>
+              <thead className="sticky top-0 bg-industrial-recessed z-10">
+                <tr className="border-b border-industrial-shadow/40 text-xs font-bold text-industrial-dark uppercase tracking-wider">
+                  <th className="py-2.5 px-3">AGENT NAME</th>
+                  <th className="py-2.5 px-3">EMAIL / ID</th>
+                  <th className="py-2.5 px-3">ASSIGNED TEAM</th>
+                  <th className="py-2.5 px-3">ROLE</th>
+                  <th className="py-2.5 px-3">AVAILABILITY</th>
+                  <th className="py-2.5 px-3 text-right">WORKLOAD SCORE</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-industrial-shadow/30 text-xs text-industrial-dark">
                 {agents.map((agent) => (
                   <tr key={agent._id} className="hover:bg-industrial-panel transition-colors">
-                    <td className="py-3.5 px-4 font-bold flex items-center gap-2.5">
+                    <td className="py-2.5 px-3 font-bold flex items-center gap-2">
                       <img
                         src={agent.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'}
                         alt={agent.name}
-                        className="w-7 h-7 rounded-full object-cover border border-industrial-shadow"
+                        className="w-6 h-6 rounded-full object-cover border border-industrial-shadow"
                       />
                       <span>{agent.name}</span>
                     </td>
-                    <td className="py-3.5 px-4 text-industrial-label">{agent.email}</td>
-                    <td className="py-3.5 px-4 font-bold">{agent.teamId?.name || 'UNASSIGNED'}</td>
-                    <td className="py-3.5 px-4">
+                    <td className="py-2.5 px-3 text-industrial-label text-xs">{agent.email}</td>
+                    <td className="py-2.5 px-3 font-bold">{agent.teamId?.name || 'UNASSIGNED'}</td>
+                    <td className="py-2.5 px-3">
                       <span className="px-2 py-0.5 rounded bg-industrial-recessed text-industrial-dark font-bold text-[10px]">
                         {agent.role}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4">
-                      <span className="inline-flex items-center gap-1 text-[#166534] font-bold text-[11px]">
+                    <td className="py-2.5 px-3">
+                      <span className="inline-flex items-center gap-1 text-[#166534] font-bold text-[10px]">
                         <span className="w-2 h-2 rounded-full led-indicator-green" /> AVAILABLE
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-right font-extrabold text-industrial-orange">
+                    <td className="py-2.5 px-3 text-right font-extrabold text-industrial-orange">
                       SCORE: {agent.workloadScore || 0}
                     </td>
                   </tr>
@@ -292,17 +292,17 @@ export default function AdminDashboard() {
 
       {/* TAB 3: ROUTING RULES */}
       {activeTab === 'routing' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-8 industrial-card corner-screws p-5 space-y-4">
-            <div className="pb-3 border-b border-industrial-shadow/40 font-mono font-bold text-xs text-industrial-dark uppercase tracking-wider pl-4">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <div className="lg:col-span-8 industrial-card corner-screws p-4 space-y-3">
+            <div className="pb-2 border-b border-industrial-shadow/40 font-mono font-bold text-xs text-industrial-dark uppercase tracking-wider pl-4">
               ROUTING MATRIX RULES
             </div>
-            <div className="space-y-3 font-mono text-xs">
+            <div className="space-y-2.5 font-mono text-xs max-h-[500px] overflow-y-auto">
               {routingRules.map((rule) => (
-                <div key={rule._id} className="industrial-well p-4 flex items-center justify-between">
+                <div key={rule._id} className="industrial-well p-3 flex items-center justify-between">
                   <div>
-                    <span className="font-bold text-industrial-dark text-sm block">{rule.name}</span>
-                    <div className="flex items-center gap-2 text-industrial-label mt-1">
+                    <span className="font-bold text-industrial-dark text-xs block">{rule.name}</span>
+                    <div className="flex items-center gap-2 text-industrial-label mt-0.5">
                       <span>CATEGORY: <strong className="text-industrial-orange">{rule.category}</strong></span>
                       <span>&rarr;</span>
                       <span>TARGET: <strong className="text-industrial-dark">{rule.teamId?.name}</strong></span>
@@ -310,16 +310,16 @@ export default function AdminDashboard() {
                   </div>
                   <button
                     onClick={() => handleDeleteRule(rule._id)}
-                    className="industrial-btn-secondary p-2 text-red-600 hover:text-red-700"
+                    className="industrial-btn-secondary p-1.5 text-red-600 hover:text-red-700"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="lg:col-span-4 industrial-card corner-screws p-5 space-y-4">
+          <div className="lg:col-span-4 industrial-card corner-screws p-4 space-y-3">
             <h3 className="text-xs font-mono font-bold text-industrial-dark uppercase tracking-wider pl-4">
               ADD ROUTING RULE
             </h3>
@@ -355,7 +355,7 @@ export default function AdminDashboard() {
 
               <button
                 type="submit"
-                className="w-full py-2.5 industrial-btn-primary text-xs font-mono flex items-center justify-center gap-1.5"
+                className="w-full py-2 industrial-btn-primary text-xs font-mono flex items-center justify-center gap-1.5"
               >
                 <Plus className="w-4 h-4" />
                 <span>SAVE ROUTING RULE</span>
@@ -367,18 +367,18 @@ export default function AdminDashboard() {
 
       {/* TAB 4: SLA MATRIX */}
       {activeTab === 'sla' && (
-        <div className="industrial-card corner-screws p-5 space-y-4">
-          <div className="pb-3 border-b border-industrial-shadow/40 font-mono font-bold text-xs text-industrial-dark uppercase tracking-wider pl-4">
+        <div className="industrial-card corner-screws p-4 space-y-3">
+          <div className="pb-2 border-b border-industrial-shadow/40 font-mono font-bold text-xs text-industrial-dark uppercase tracking-wider pl-4">
             SLA RESOLUTION MATRIX
           </div>
-          <div className="space-y-3 font-mono text-xs">
+          <div className="space-y-2.5 font-mono text-xs">
             {slaRules.map((sla) => (
-              <div key={sla._id || sla.priority} className="industrial-well p-4 flex items-center justify-between">
+              <div key={sla._id || sla.priority} className="industrial-well p-3 flex items-center justify-between">
                 <div>
-                  <span className="font-bold text-industrial-dark text-sm block">{sla.priority} PRIORITY SLA</span>
-                  <span className="text-industrial-label mt-0.5 block font-sans">{sla.description}</span>
+                  <span className="font-bold text-industrial-dark text-xs block">{sla.priority} PRIORITY SLA</span>
+                  <span className="text-industrial-label text-[11px] block font-sans">{sla.description}</span>
                 </div>
-                <span className="font-mono font-bold text-white bg-industrial-orange px-3 py-1 rounded text-xs shadow-xs">
+                <span className="font-mono font-bold text-white bg-industrial-orange px-2.5 py-0.5 rounded text-[11px] shadow-xs">
                   {sla.targetMinutes} MIN TARGET
                 </span>
               </div>
