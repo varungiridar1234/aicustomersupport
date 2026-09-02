@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
+const fs = require('fs');
 const errorHandler = require('./middleware/errorHandler');
 
 const authRoutes = require('./routes/authRoutes');
@@ -36,6 +38,45 @@ app.use('/api', aiRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/knowledge', knowledgeRoutes);
 app.use('/api', auditRoutes);
+
+// Static frontend build handling & Root GET '/' fallback
+const distPath = path.join(__dirname, '../../frontend/dist');
+
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath));
+}
+
+app.get('/', (req, res) => {
+  const indexPath = path.join(distPath, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    return res.sendFile(indexPath);
+  }
+  return res.status(200).json({
+    status: 'ok',
+    service: 'Shubya AI Customer Support Resolution Platform Backend API',
+    version: '1.0.0',
+    documentation: {
+      healthCheck: 'GET /health',
+      externalIngestion: 'POST /api/tickets/external',
+      ticketsApi: 'GET /api/tickets',
+    },
+  });
+});
+
+// SPA routing fallback for non-API routes
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api') || req.path === '/health') {
+    return next();
+  }
+  const indexPath = path.join(distPath, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    return res.sendFile(indexPath);
+  }
+  return res.status(200).json({
+    status: 'ok',
+    service: 'Shubya AI Customer Support Resolution Platform Backend API',
+  });
+});
 
 // Centralized error handler
 app.use(errorHandler);
