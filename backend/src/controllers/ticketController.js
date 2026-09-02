@@ -8,6 +8,7 @@ const SLAService = require('../services/slaService');
 const RAGService = require('../services/ragService');
 const AuditService = require('../services/auditService');
 const NotificationService = require('../services/notificationService');
+const { getNextTicketId } = require('../services/sequenceService');
 const { STATUSES, SLA_STATUSES } = require('../config/constants');
 
 // Helper to find ticket by ObjectId or string ticketId
@@ -64,9 +65,8 @@ exports.createExternalTicket = async (req, res, next) => {
       });
     }
 
-    // 3. Generate unique Ticket ID
-    const count = await Ticket.countDocuments();
-    const ticketId = `TICK-${1024 + count}`;
+    // 3. Generate unique, atomic, persistent Ticket ID from MongoDB sequence
+    const ticketId = await getNextTicketId();
 
     // 4. Store initial Ticket in database (Ignore untrusted client fields like priority, category, team, etc.)
     const ticket = await Ticket.create({

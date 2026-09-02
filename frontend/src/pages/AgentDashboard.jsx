@@ -68,15 +68,17 @@ export default function AgentDashboard() {
     if (socket) {
       socket.on('ticket_updated', handleLiveEvent);
       socket.on('ticket_event', handleLiveEvent);
+      socket.on('ticket:created', handleLiveEvent);
       socket.on('notification', handleLiveEvent);
     }
 
-    const interval = setInterval(() => fetchTickets(true), 10000); // 10s fallback polling
+    const interval = setInterval(() => fetchTickets(true), 5000); // 5s fallback polling
 
     return () => {
       if (socket) {
         socket.off('ticket_updated', handleLiveEvent);
         socket.off('ticket_event', handleLiveEvent);
+        socket.off('ticket:created', handleLiveEvent);
         socket.off('notification', handleLiveEvent);
       }
       clearInterval(interval);
