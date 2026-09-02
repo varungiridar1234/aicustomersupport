@@ -18,6 +18,7 @@ import api from '../services/api';
 import PriorityBadge from '../components/ui/PriorityBadge';
 import StatusBadge from '../components/ui/StatusBadge';
 import SLATimer from '../components/ui/SLATimer';
+import { getSocket } from '../services/socket';
 
 export default function AgentDashboard() {
   const navigate = useNavigate();
@@ -57,8 +58,29 @@ export default function AgentDashboard() {
 
   useEffect(() => {
     fetchTickets(false); // Initial load — show spinner
-    const interval = setInterval(() => fetchTickets(true), 30000); // Background refresh every 30s — silent
-    return () => clearInterval(interval);
+
+    // Subscribe to real-time socket events for instant update when external portal tickets arrive
+    const socket = getSocket();
+    const handleLiveEvent = () => {
+      fetchTickets(true); // Silent background refresh
+    };
+
+    if (socket) {
+      socket.on('ticket_updated', handleLiveEvent);
+      socket.on('ticket_event', handleLiveEvent);
+      socket.on('notification', handleLiveEvent);
+    }
+
+    const interval = setInterval(() => fetchTickets(true), 10000); // 10s fallback polling
+
+    return () => {
+      if (socket) {
+        socket.off('ticket_updated', handleLiveEvent);
+        socket.off('ticket_event', handleLiveEvent);
+        socket.off('notification', handleLiveEvent);
+      }
+      clearInterval(interval);
+    };
   }, [search, priorityFilter, statusFilter, categoryFilter]);
 
   // Compute metric stats

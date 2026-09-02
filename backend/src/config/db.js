@@ -25,7 +25,7 @@ const connectDB = async () => {
     console.log(`[Database] MongoMemoryServer connected at ${uri}`);
     return;
   } catch (error) {
-    console.error(`[Database] MongoMemoryServer error: ${error.message}`);
+    console.error(`[Database] MongoMemoryServer notice: ${error.message}`);
   }
 };
 
